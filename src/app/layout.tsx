@@ -3,7 +3,6 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { FilterProvider } from "@/components/providers/FilterProvider";
-import { AppShell } from "@/components/layout/AppShell";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,12 +28,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="de" suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html
+      lang="de"
+      suppressHydrationWarning
+      className={`${inter.variable} ${spaceGrotesk.variable}`}
+    >
       <body>
         <ThemeProvider>
-          <FilterProvider>
-            <AppShell>{children}</AppShell>
-          </FilterProvider>
+          <FilterProvider>{children}</FilterProvider>
         </ThemeProvider>
       </body>
     </html>

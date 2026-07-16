@@ -1,104 +1,225 @@
 import type { JarvisPrompt } from "../types";
 
-// Vorschlagsfragen der Geschäftsführung mit vorbereiteten Dummy-Antworten.
+// Vorschlagsfragen der Geschäftsführung mit vorbereiteten Demo-Antworten.
 // Antworten enthalten Standortbezug, priorisierte Maßnahmen und Quellenhinweise.
 export const jarvisPrompts: JarvisPrompt[] = [
   {
     id: "q-lage",
-    question: "Wie ist die aktuelle Lage im Netzwerk?",
+    question: "Wie ist die aktuelle Lage im Standortnetz?",
     answer: {
-      headline: "Insgesamt stabil, ein kritischer Ausreißer.",
-      body: "Der netzweite Quality Score liegt bei 79 (-1,4 ggü. Vorwoche). Sechs von acht Standorten sind stabil oder nur leicht rückläufig. Frankfurt Zeil (91) und München Zentrum (88) führen. Köln Ring (62) drückt den Schnitt spürbar und ist der einzige Standort im kritischen Bereich; Berlin Mitte (74) rutscht Richtung Beobachten. Die Ø-Bewertung fiel netzweit leicht von 4,3 auf 4,2, der NPS von 41 auf 38.",
+      headline: "Insgesamt stabil, ein Demo-Standort braucht Aufmerksamkeit.",
+      body:
+        "Der netzwerkweite Quality Score liegt bei 78 Punkten. Fitness Level Langen führt mit 91 Punkten, einer durchschnittlichen Bewertung von 4,7 Sternen und einem NPS von 62. Fitness Level Demo West liegt mit 64 Punkten im kritischen Bereich und zieht den Gesamtschnitt nach unten. Fitness Level Demo Ost entwickelt sich in Richtung Beobachten. Die durchschnittliche Bewertung im Standortnetz liegt aktuell bei 4,2 Sternen.",
       actions: [
-        { title: "Sofortmaßnahmen Köln Ring bündeln und nachverfolgen", priority: "critical", owner: "Sarah Klein", locationId: "loc-cgn" },
-        { title: "Berlin Mitte präventiv gegensteuern (Wartezeiten, Gerätesicherheit)", priority: "high", owner: "Melis Aydın", locationId: "loc-ber" },
+        {
+          title:
+            "Sofortmaßnahmen in Fitness Level Demo West bündeln und nachverfolgen",
+          priority: "critical",
+          owner: "Demo Studioleitung West",
+          locationId: "demo-west",
+        },
+        {
+          title:
+            "Fitness Level Demo Ost präventiv gegensteuern",
+          priority: "high",
+          owner: "Demo Studioleitung Ost",
+          locationId: "demo-ost",
+        },
       ],
       sources: [
-        { label: "Standort-Kennzahlen", detail: "8 Standorte · KW29" },
-        { label: "Feedback", detail: "1.506 Bewertungen · letzte 30 Tage" },
-        { label: "Aufgaben", detail: "10 offen, davon 2 kritisch" },
+        {
+          label: "Standort-Kennzahlen",
+          detail: "5 Standorte · aktuelle Demo-Periode",
+        },
+        {
+          label: "Feedback",
+          detail: "992 Bewertungen · letzte 30 Tage",
+        },
+        {
+          label: "Aufgaben",
+          detail: "38 offen · mehrere kritische Themen",
+        },
       ],
-      focusLocationIds: ["loc-cgn", "loc-ber"],
+      focusLocationIds: ["demo-west", "demo-ost"],
     },
   },
   {
     id: "q-attention",
     question: "Welcher Standort braucht am dringendsten Aufmerksamkeit?",
     answer: {
-      headline: "Köln Ring – mit Abstand.",
-      body: "Köln Ring hat den niedrigsten Quality Score (62) und die stärkste Negativdynamik: -0,5 Sterne in sechs Wochen, Mitgliederschwund -4,7 %, 14 offene Aufgaben und 4 kritische Themen. Zwei Trainer liegen unter der Zielbewertung von 3,6. Am zweitwichtigsten ist Berlin Mitte: noch im grünen Bereich, aber mit steigenden Wartezeiten und einem Gerätesicherheits-Thema.",
+      headline: "Fitness Level Demo West – mit deutlichem Abstand.",
+      body:
+        "Fitness Level Demo West hat mit 64 Punkten den niedrigsten Quality Score und die stärkste negative Entwicklung im Standortnetz. Die durchschnittliche Bewertung liegt bei 3,8 Sternen, der NPS bei 15 und der Mitgliederschwund bei 3,9 %. Zusätzlich bestehen 13 offene Aufgaben und 4 kritische Themen. Die größten Treiber sind Sauberkeit, defekte Geräte und Beschwerden zur Rezeption.",
       actions: [
-        { title: "Reinigungsintervalle Umkleide/Dusche (Abendschicht) erhöhen", priority: "critical", owner: "Sarah Klein", locationId: "loc-cgn" },
-        { title: "3 defekte Laufbänder reparieren / ersetzen", priority: "critical", owner: "Facility DE", locationId: "loc-cgn" },
-        { title: "1:1 mit den zwei Trainern unter Zielbewertung", priority: "high", owner: "Sarah Klein", locationId: "loc-cgn" },
+        {
+          title:
+            "Reinigungsintervalle in Umkleiden und Duschen am Abend erhöhen",
+          priority: "critical",
+          owner: "Demo Studioleitung West",
+          locationId: "demo-west",
+        },
+        {
+          title: "Defekte Cardio-Geräte kurzfristig reparieren oder ersetzen",
+          priority: "critical",
+          owner: "Facility Management",
+          locationId: "demo-west",
+        },
+        {
+          title:
+            "Rezeptionsteam schulen und Ursachen der Beschwerden prüfen",
+          priority: "high",
+          owner: "Demo Studioleitung West",
+          locationId: "demo-west",
+        },
       ],
       sources: [
-        { label: "Standort Köln Ring", detail: "Quality 62 · Ø 3,8 · NPS 12" },
-        { label: "Trainer-Ranking", detail: "2 Trainer < 3,6" },
-        { label: "Feedback-Cluster", detail: "Sauberkeit 23 · Geräte 14" },
+        {
+          label: "Fitness Level Demo West",
+          detail: "Quality 64 · Ø 3,8 · NPS 15",
+        },
+        {
+          label: "Aufgaben",
+          detail: "13 offen · 4 kritisch",
+        },
+        {
+          label: "Feedback-Cluster",
+          detail: "Sauberkeit 23 · Geräte 14 · Rezeption 11",
+        },
       ],
-      focusLocationIds: ["loc-cgn"],
+      focusLocationIds: ["demo-west"],
     },
   },
   {
     id: "q-ratings",
     question: "Warum sind die Bewertungen gesunken?",
     answer: {
-      headline: "Zwei Themen tragen ~60 % des Rückgangs.",
-      body: "Der netzweite Bewertungsrückgang (4,3 → 4,2) wird vor allem durch Köln Ring verursacht. Dort dominieren zwei Cluster: Sauberkeit (23 Nennungen, +61 %) und defekte Geräte (14 Nennungen, +40 %), beide vor allem in der Abendschicht. Ergänzend nehmen netzweit Wartezeiten zur Stoßzeit zu (+12 %), sichtbar in Berlin Mitte. Positiv: App-Kritik und Kurskritik gehen leicht zurück.",
+      headline: "Drei Themen erklären den größten Teil des Rückgangs.",
+      body:
+        "Der leichte Rückgang der netzwerkweiten Bewertung wird vor allem durch Fitness Level Demo West verursacht. Dort häufen sich Beschwerden zu Sauberkeit und defekten Geräten. Zusätzlich nehmen in Fitness Level Demo Ost die Wartezeiten während der Stoßzeiten zu. Fitness Level Langen entwickelt sich dagegen stabil positiv und gleicht einen Teil der negativen Entwicklung aus.",
       actions: [
-        { title: "Ursachenanalyse Abendschicht Köln (Reinigung + Wartung)", priority: "critical", owner: "Sarah Klein", locationId: "loc-cgn" },
-        { title: "Kapazitätssteuerung Stoßzeit Berlin prüfen", priority: "medium", owner: "Melis Aydın", locationId: "loc-ber" },
+        {
+          title:
+            "Ursachenanalyse für die Abendschicht in Demo West durchführen",
+          priority: "critical",
+          owner: "Demo Studioleitung West",
+          locationId: "demo-west",
+        },
+        {
+          title:
+            "Stoßzeiten und Geräteauslastung in Demo Ost analysieren",
+          priority: "medium",
+          owner: "Demo Studioleitung Ost",
+          locationId: "demo-ost",
+        },
       ],
       sources: [
-        { label: "Bewertungsentwicklung", detail: "6 Perioden · Netzwerk vs. Köln" },
-        { label: "Kritikpunkt-Cluster", detail: "Sauberkeit, Gerätezustand, Wartezeiten" },
-        { label: "Sentiment-Analyse", detail: "1.506 Feedbacks klassifiziert" },
+        {
+          label: "Bewertungsentwicklung",
+          detail: "6 Perioden · Standortnetz vs. Demo West",
+        },
+        {
+          label: "Kritikpunkt-Cluster",
+          detail: "Sauberkeit, Gerätezustand, Wartezeiten",
+        },
+        {
+          label: "Sentiment-Analyse",
+          detail: "992 Feedbacks klassifiziert",
+        },
       ],
-      focusLocationIds: ["loc-cgn", "loc-ber"],
+      focusLocationIds: ["demo-west", "demo-ost"],
     },
   },
   {
     id: "q-critical",
     question: "Welche Probleme sind aktuell kritisch?",
     answer: {
-      headline: "Fünf Themen, konzentriert auf Köln und Berlin.",
-      body: "Kritisch (sofort handeln): Sauberkeit Umkleiden/Duschen in Köln (23, +61 %) und defekte Cardio-Geräte in Köln (14, +40 %). Hoch: Wartezeiten zur Stoßzeit in Berlin (19, +22 %), Gerätesicherheit in Berlin (8, +33 %) sowie unfreundliche Rezeption in Köln (11, +18 %). Alle fünf sind bereits als Aufgaben angelegt; zwei davon sind in Bearbeitung.",
+      headline: "Fünf relevante Themen, konzentriert auf zwei Demo-Standorte.",
+      body:
+        "Sofortiger Handlungsbedarf besteht bei der Sauberkeit in Umkleiden und Duschen sowie bei defekten Cardio-Geräten in Fitness Level Demo West. Zusätzlich werden dort Beschwerden zur Freundlichkeit an der Rezeption häufiger. In Fitness Level Demo Ost steigen Wartezeiten während der Stoßzeiten und Hinweise zur Gerätesicherheit. Die Themen sollten priorisiert und mit klaren Verantwortlichkeiten versehen werden.",
       actions: [
-        { title: "Kritische Köln-Themen als Task-Bündel mit Deadline diese Woche", priority: "critical", owner: "Sarah Klein", locationId: "loc-cgn" },
-        { title: "Gerätesicherheits-Check Berlin (Kabelzüge, Racks)", priority: "high", owner: "Facility DE", locationId: "loc-ber" },
+        {
+          title:
+            "Kritische Themen in Demo West als Task-Bündel mit Deadline anlegen",
+          priority: "critical",
+          owner: "Demo Studioleitung West",
+          locationId: "demo-west",
+        },
+        {
+          title:
+            "Gerätesicherheits-Check in Demo Ost durchführen",
+          priority: "high",
+          owner: "Facility Management",
+          locationId: "demo-ost",
+        },
       ],
       sources: [
-        { label: "Kritische Themen", detail: "5 aktiv · 2 kritisch, 3 hoch" },
-        { label: "Aufgabenstatus", detail: "2 in Bearbeitung, 3 offen" },
+        {
+          label: "Kritische Themen",
+          detail: "5 aktiv · 2 kritisch · 3 hoch",
+        },
+        {
+          label: "Aufgabenstatus",
+          detail: "mehrere Aufgaben offen oder in Bearbeitung",
+        },
       ],
-      focusLocationIds: ["loc-cgn", "loc-ber"],
+      focusLocationIds: ["demo-west", "demo-ost"],
     },
   },
   {
     id: "q-actions",
     question: "Welche Maßnahmen empfiehlst du priorisiert?",
     answer: {
-      headline: "Drei Prioritäten für diese Woche.",
-      body: "1) Köln stabilisieren: Reinigungsintervalle Abendschicht erhöhen und defekte Geräte reparieren – das adressiert ~60 % der aktuellen Negativbewertungen. 2) Personal Köln: Rezeptionsschulung und 1:1 mit den zwei Trainern unter Zielbewertung. 3) Berlin präventiv: Kapazitätssteuerung zur Stoßzeit und Gerätesicherheits-Check, bevor der Standort in den kritischen Bereich rutscht. Erwarteter Effekt: +5–7 Punkte Quality Score in Köln über 3–4 Wochen.",
+      headline: "Drei Prioritäten für die nächsten sieben Tage.",
+      body:
+        "Erstens sollte Fitness Level Demo West stabilisiert werden: Reinigungsintervalle erhöhen, defekte Geräte reparieren und Beschwerden zur Rezeption gezielt bearbeiten. Zweitens sollte Fitness Level Demo Ost präventiv geprüft werden, insbesondere bei Stoßzeiten und Gerätesicherheit. Drittens sollten die positiven Prozesse aus Fitness Level Langen als interner Benchmark dokumentiert und auf andere Standorte übertragen werden.",
       actions: [
-        { title: "Reinigung + Gerätereparatur Köln (Deadline diese Woche)", priority: "critical", owner: "Sarah Klein", locationId: "loc-cgn" },
-        { title: "Rezeptionsschulung + Trainer-1:1 Köln", priority: "high", owner: "Sarah Klein", locationId: "loc-cgn" },
-        { title: "Kapazitäts- & Sicherheitscheck Berlin", priority: "medium", owner: "Melis Aydın", locationId: "loc-ber" },
+        {
+          title:
+            "Reinigung und Gerätereparatur in Demo West priorisieren",
+          priority: "critical",
+          owner: "Demo Studioleitung West",
+          locationId: "demo-west",
+        },
+        {
+          title:
+            "Kapazitäts- und Sicherheitscheck in Demo Ost durchführen",
+          priority: "high",
+          owner: "Demo Studioleitung Ost",
+          locationId: "demo-ost",
+        },
+        {
+          title:
+            "Best Practices aus Fitness Level Langen dokumentieren",
+          priority: "medium",
+          owner: "Studioleitung Langen",
+          locationId: "langen",
+        },
       ],
       sources: [
-        { label: "Wirkungsabschätzung", detail: "Modell auf Basis Cluster-Gewichte" },
-        { label: "Aufgabenverknüpfung", detail: "6 Aufgaben betroffen" },
+        {
+          label: "Wirkungsabschätzung",
+          detail: "Demo-Modell auf Basis der Feedback-Cluster",
+        },
+        {
+          label: "Standortvergleich",
+          detail: "Langen als aktueller Benchmark",
+        },
       ],
-      focusLocationIds: ["loc-cgn", "loc-ber"],
+      focusLocationIds: ["demo-west", "demo-ost", "langen"],
     },
   },
 ];
 
 export const jarvisFallback: JarvisPrompt["answer"] = {
-  headline: "Dazu liegen mir Netzwerkdaten vor.",
-  body: "In diesem Prototyp arbeitet Jarvis mit hinterlegten Beispielantworten. Wähle eine der Vorschlagsfragen, um eine vollständige Auswertung mit Standortbezug, priorisierten Maßnahmen und Quellenhinweisen zu sehen. In der späteren Version beantwortet Jarvis freie Fragen live über alle Standorte.",
+  headline: "Dazu liegen mir Standortdaten vor.",
+  body:
+    "In diesem Prototyp arbeitet Jarvis mit vorbereiteten Beispielantworten. Wähle eine der Vorschlagsfragen, um eine vollständige Auswertung mit Standortbezug, priorisierten Maßnahmen und Quellenhinweisen zu sehen. In der späteren Version beantwortet Jarvis freie Fragen live auf Basis der freigegebenen Daten aller Standorte.",
   actions: [],
-  sources: [{ label: "Hinweis", detail: "Prototyp mit Dummy-Daten" }],
+  sources: [
+    {
+      label: "Hinweis",
+      detail: "Prototyp mit Demo-Daten",
+    },
+  ],
   focusLocationIds: [],
 };

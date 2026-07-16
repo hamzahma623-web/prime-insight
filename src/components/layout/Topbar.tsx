@@ -33,12 +33,13 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
           options={LOCATION_OPTIONS}
           onChange={setLocationId}
         />
+
         <Select
           ariaLabel="Zeitraum filtern"
           icon="clock"
           value={timeRange}
           options={TIME_RANGES}
-          onChange={(v) => setTimeRange(v as typeof timeRange)}
+          onChange={(value) => setTimeRange(value as typeof timeRange)}
           className="hidden sm:inline-flex"
         />
       </div>
@@ -48,6 +49,7 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             <Icon name="search" size={15} />
           </span>
+
           <input
             type="search"
             placeholder="Suchen…"
@@ -61,18 +63,32 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
           className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Icon name="bell" size={17} />
+
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-danger ring-2 ring-card" />
         </button>
 
         <ThemeToggle />
 
+        <form action="/api/auth/logout" method="post">
+          <button
+            type="submit"
+            className="hidden h-9 items-center justify-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+          >
+            Abmelden
+          </button>
+        </form>
+
         <div className="ml-1 hidden items-center gap-2.5 sm:flex">
           <Avatar initials="GF" />
+
           <div className="leading-tight">
             <div className="text-sm font-semibold text-foreground">
               Geschäftsführung
             </div>
-            <div className="text-xs text-muted-foreground">Alle Standorte</div>
+
+            <div className="text-xs text-muted-foreground">
+              Alle Standorte
+            </div>
           </div>
         </div>
       </div>
