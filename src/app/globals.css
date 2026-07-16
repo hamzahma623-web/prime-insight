@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+/* Dark Mode über .dark-Klasse am <html> (gesetzt vom ThemeProvider) */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #f6f7f9;
+  --foreground: #0c1220;
+  --card: #ffffff;
+  --card-foreground: #0c1220;
+  --muted: #eef0f4;
+  --muted-foreground: #5a6473;
+  --border: #e4e7ec;
+  --primary: #111827;
+  --primary-foreground: #ffffff;
+  --accent: #0fa378;
+  --accent-foreground: #052a20;
+  --accent-soft: #dcf4ec;
+  --success: #12a150;
+  --success-foreground: #ffffff;
+  --success-soft: #dbf4e4;
+  --warning: #b7770a;
+  --warning-soft: #f8ebd3;
+  --danger: #dc2626;
+  --danger-soft: #fbe0e0;
+  --info: #2563eb;
+  --info-soft: #dee7fe;
+  --ring: #0fa378;
+}
+
+.dark {
+  --background: #0a0e14;
+  --foreground: #e6eaf1;
+  --card: #111722;
+  --card-foreground: #e6eaf1;
+  --muted: #1a2230;
+  --muted-foreground: #8c96a8;
+  --border: #232c3b;
+  --primary: #e6eaf1;
+  --primary-foreground: #0a0e14;
+  --accent: #2cd4a6;
+  --accent-foreground: #052a20;
+  --accent-soft: #0e2e28;
+  --success: #34d399;
+  --success-foreground: #04231a;
+  --success-soft: #10281e;
+  --warning: #fbbf24;
+  --warning-soft: #2a2110;
+  --danger: #f87171;
+  --danger-soft: #2a1414;
+  --info: #60a5fa;
+  --info-soft: #111e33;
+  --ring: #2cd4a6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space), var(--font-inter), sans-serif;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+/* Schmale, dezente Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
