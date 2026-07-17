@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  LOCATION_OPTIONS,
   TIME_RANGES,
   useFilters,
 } from "@/components/providers/FilterProvider";
@@ -10,8 +9,19 @@ import { ThemeToggle } from "./ThemeToggle";
 import { Icon } from "@/lib/icons";
 import { Avatar } from "@/components/ui/Primitives";
 
-export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
-  const { locationId, setLocationId, timeRange, setTimeRange } = useFilters();
+export function Topbar({
+  onOpenMenu,
+}: {
+  onOpenMenu: () => void;
+}) {
+  const {
+    locationId,
+    setLocationId,
+    timeRange,
+    setTimeRange,
+    locationOptions,
+    locationsLoading,
+  } = useFilters();
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md lg:px-6">
@@ -24,22 +34,23 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
         <Icon name="menu" size={18} />
       </button>
 
-      {/* Globale Filter */}
       <div className="flex items-center gap-2">
         <Select
           ariaLabel="Standort filtern"
           icon="location"
           value={locationId}
-          options={LOCATION_OPTIONS}
+          options={locationOptions}
           onChange={setLocationId}
-        />
+                  />
 
         <Select
           ariaLabel="Zeitraum filtern"
           icon="clock"
           value={timeRange}
           options={TIME_RANGES}
-          onChange={(value) => setTimeRange(value as typeof timeRange)}
+          onChange={(value) =>
+            setTimeRange(value as typeof timeRange)
+          }
           className="hidden sm:inline-flex"
         />
       </div>
@@ -87,7 +98,11 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
             </div>
 
             <div className="text-xs text-muted-foreground">
-              Alle Standorte
+              {locationId === "all"
+                ? "Alle Standorte"
+                : locationOptions.find(
+                    (option) => option.value === locationId
+                  )?.label ?? "Standort"}
             </div>
           </div>
         </div>

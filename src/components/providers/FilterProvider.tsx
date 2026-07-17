@@ -3,47 +3,169 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
-import { locations } from "@/lib/data/locations";
 
 export type TimeRange = "7d" | "30d" | "90d" | "ytd";
 
-export const TIME_RANGES: { value: TimeRange; label: string }[] = [
+type ApiLocation = {
+  id: string;
+  name: string;
+  slug: string;
+  city: string | null;
+};
+
+type LocationOption = {
+  value: string;
+  label: string;
+};
+
+type LocationsApiResponse = {
+  ok: boolean;
+  locations?: ApiLocation[];
+  error?: string;
+};
+
+export const TIME_RANGES: {
+  value: TimeRange;
+  label: string;
+}[] = [
   { value: "7d", label: "Letzte 7 Tage" },
   { value: "30d", label: "Letzte 30 Tage" },
   { value: "90d", label: "Letzte 90 Tage" },
   { value: "ytd", label: "Jahr bis heute" },
 ];
 
-export const LOCATION_OPTIONS = [
-  { value: "all", label: "Alle Standorte" },
-  ...locations.map((l) => ({ value: l.id, label: l.name })),
-];
-
 interface FilterContextValue {
-  locationId: string; // "all" oder Standort-ID
+  locationId: string;
   timeRange: TimeRange;
   setLocationId: (id: string) => void;
-  setTimeRange: (r: TimeRange) => void;
+  setTimeRange: (range: TimeRange) => void;
   locationLabel: string;
   timeRangeLabel: string;
+  locationOptions: LocationOption[];
+  locationsLoading: boolean;
+  locationsError: string;
 }
 
 const FilterContext = createContext<FilterContextValue | null>(null);
 
-export function FilterProvider({ children }: { children: ReactNode }) {
+export function FilterProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [locationId, setLocationId] = useState("all");
-  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+  const [timeRange, setTimeRange] =
+    useState<TimeRange>("30d");
+
+  const [locations, setLocations] = useState<ApiLocation[]>([]);
+  const [locationsLoading, setLocationsLoading] =
+    useState(true);
+  const [locationsError, setLocationsError] =
+    useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadLocations() {
+      setLocationsLoading(true);
+      setLocationsError("");
+
+      try {
+        const response = await fetch("/api/locations/list", {
+          method: "GET",
+          cache: "no-store",
+          signal: controller.signal,
+        });
+
+        const result =
+          (await response.json()) as LocationsApiResponse;
+
+        if (!response.ok || !result.ok) {
+          throw new Error(
+            result.error ||
+              "Standorte konnten nicht geladen werden."
+          );
+        }
+
+        const loadedLocations = result.locations ?? [];
+
+        setLocations(loadedLocations);
+
+        setLocationId((currentLocationId) => {
+          if (currentLocationId === "all") {
+            return "all";
+          }
+
+          const stillExists = loadedLocations.some(
+            (location) =>
+              location.slug === currentLocationId ||
+              location.id === currentLocationId
+          );
+
+          return stillExists ? currentLocationId : "all";
+        });
+      } catch (error) {
+        if (
+          error instanceof DOMException &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        console.error("Locations loading failed:", error);
+
+        setLocations([]);
+        setLocationId("all");
+
+        setLocationsError(
+          error instanceof Error
+            ? error.message
+            : "Standorte konnten nicht geladen werden."
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setLocationsLoading(false);
+        }
+      }
+    }
+
+    void loadLocations();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  const locationOptions = useMemo<LocationOption[]>(
+    () => [
+      {
+        value: "all",
+        label: "Alle Standorte",
+      },
+      ...locations.map((location) => ({
+        value: location.slug,
+        label: location.name,
+      })),
+    ],
+    [locations]
+  );
 
   const value = useMemo<FilterContextValue>(() => {
     const locationLabel =
-      LOCATION_OPTIONS.find((o) => o.value === locationId)?.label ??
-      "Alle Standorte";
+      locationOptions.find(
+        (option) => option.value === locationId
+      )?.label ?? "Alle Standorte";
+
     const timeRangeLabel =
-      TIME_RANGES.find((o) => o.value === timeRange)?.label ?? "Letzte 30 Tage";
+      TIME_RANGES.find(
+        (option) => option.value === timeRange
+      )?.label ?? "Letzte 30 Tage";
+
     return {
       locationId,
       timeRange,
@@ -51,17 +173,33 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       setTimeRange,
       locationLabel,
       timeRangeLabel,
+      locationOptions,
+      locationsLoading,
+      locationsError,
     };
-  }, [locationId, timeRange]);
+  }, [
+    locationId,
+    timeRange,
+    locationOptions,
+    locationsLoading,
+    locationsError,
+  ]);
 
   return (
-    <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
+    <FilterContext.Provider value={value}>
+      {children}
+    </FilterContext.Provider>
   );
 }
 
 export function useFilters(): FilterContextValue {
-  const ctx = useContext(FilterContext);
-  if (!ctx)
-    throw new Error("useFilters muss innerhalb des FilterProvider liegen.");
-  return ctx;
+  const context = useContext(FilterContext);
+
+  if (!context) {
+    throw new Error(
+      "useFilters muss innerhalb des FilterProvider liegen."
+    );
+  }
+
+  return context;
 }

@@ -1,158 +1,95 @@
 "use client";
 
-import { useMemo } from "react";
-import { SectionHeading, Avatar, ProgressBar } from "@/components/ui/Primitives";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { KpiCard } from "@/components/ui/KpiCard";
-import { Stars } from "@/components/ui/Stars";
-import { StatusBadge } from "@/components/ui/Badge";
+import { SectionHeading } from "@/components/ui/Primitives";
+import { Card } from "@/components/ui/Card";
 import { Icon } from "@/lib/icons";
-import { cn } from "@/lib/format";
-import { Table, THead, TH, TBody, TR, TD } from "@/components/ui/Table";
 import { useFilters } from "@/components/providers/FilterProvider";
-import { trainers } from "@/lib/data/trainers";
-import { locationName } from "@/lib/data/locations";
-import type { Trend } from "@/lib/types";
-
-function TrendIcon({ trend }: { trend: Trend }) {
-  if (trend === "flat")
-    return <span className="text-muted-foreground">–</span>;
-  return (
-    <Icon
-      name={trend === "up" ? "arrowUp" : "arrowDown"}
-      size={15}
-      className={cn(trend === "up" ? "text-success" : "text-danger")}
-    />
-  );
-}
 
 export default function TrainerPage() {
-  const { locationId } = useFilters();
+  const { locationId, locationOptions } = useFilters();
 
-  const rows = useMemo(() => {
-    const list =
-      locationId === "all"
-        ? trainers
-        : trainers.filter((t) => t.locationId === locationId);
-    return [...list].sort((a, b) => b.rating - a.rating);
-  }, [locationId]);
-
-  const stats = useMemo(() => {
-    const avg = rows.reduce((s, t) => s + t.rating, 0) / (rows.length || 1);
-    const underTarget = rows.filter((t) => t.rating < 3.6).length;
-    const avgRetention =
-      rows.reduce((s, t) => s + t.retentionPct, 0) / (rows.length || 1);
-    return { avg, underTarget, avgRetention, top: rows[0] };
-  }, [rows]);
+  const selectedLocation =
+    locationId === "all"
+      ? "Alle Standorte"
+      : locationOptions.find(
+  (location) => location.value === locationId
+)?.label ?? "Ausgewählter Standort";
 
   return (
     <div>
       <SectionHeading
-        eyebrow="Betreuungsqualität"
+        eyebrow="Teamübersicht"
         title="Trainer"
-        description="Leistung, Bindung und Bewertungen aller Trainer im Netzwerk."
+        description={`${selectedLocation} · Hier werden später alle Trainer übersichtlich dargestellt.`}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          label="Ø-Trainerbewertung"
-          value={stats.avg.toFixed(1).replace(".", ",")}
-          unit="/ 5"
-          icon="star"
-        />
-        <KpiCard
-          label="Ø-Retention"
-          value={`${Math.round(stats.avgRetention)}`}
-          unit="%"
-          icon="trend"
-          tone="accent"
-        />
-        <KpiCard
-          label="Unter Zielbewertung"
-          value={String(stats.underTarget)}
-          icon="alert"
-          tone={stats.underTarget > 0 ? "danger" : "neutral"}
-        />
-        <KpiCard
-          label="Top-Performer"
-          value={stats.top ? stats.top.rating.toFixed(1).replace(".", ",") : "–"}
-          icon="trainer"
-        />
-      </div>
+      <Card className="p-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+            <Icon name="trainer" size={24} />
+          </span>
 
-      <Card className="mt-6">
-        <CardHeader title="Trainer-Ranking" subtitle={`${rows.length} Trainer`} />
-        <div className="mt-2">
-          <Table>
-            <THead>
-              <TH>#</TH>
-              <TH>Trainer</TH>
-              <TH>Standort</TH>
-              <TH>Bewertung</TH>
-              <TH align="right">Einheiten</TH>
-              <TH>Retention</TH>
-              <TH align="right">NPS-Beitrag</TH>
-              <TH align="center">Trend</TH>
-              <TH>Status</TH>
-            </THead>
-            <TBody>
-              {rows.map((t, i) => (
-                <TR key={t.id}>
-                  <TD className="tabular-nums text-muted-foreground">{i + 1}</TD>
-                  <TD>
-                    <div className="flex items-center gap-2.5">
-                      <Avatar initials={t.initials} />
-                      <span className="font-medium text-foreground">{t.name}</span>
-                    </div>
-                  </TD>
-                  <TD className="text-sm text-muted-foreground">
-                    {locationName(t.locationId)}
-                  </TD>
-                  <TD>
-                    <Stars value={t.rating} size={12} />
-                  </TD>
-                  <TD align="right" className="tabular-nums">
-                    {t.sessions}
-                  </TD>
-                  <TD className="w-40">
-                    <div className="flex items-center gap-2">
-                      <ProgressBar
-                        value={t.retentionPct}
-                        tone={
-                          t.retentionPct >= 85
-                            ? "success"
-                            : t.retentionPct >= 75
-                              ? "warning"
-                              : "danger"
-                        }
-                      />
-                      <span className="w-9 text-right text-xs font-medium tabular-nums text-muted-foreground">
-                        {t.retentionPct}%
-                      </span>
-                    </div>
-                  </TD>
-                  <TD align="right" className="tabular-nums">
-                    <span
-                      className={cn(
-                        "font-semibold",
-                        t.npsContribution < 0 ? "text-danger" : "text-foreground",
-                      )}
-                    >
-                      {t.npsContribution > 0 ? `+${t.npsContribution}` : t.npsContribution}
-                    </span>
-                  </TD>
-                  <TD align="center">
-                    <div className="flex justify-center">
-                      <TrendIcon trend={t.trend} />
-                    </div>
-                  </TD>
-                  <TD>
-                    <StatusBadge status={t.status} />
-                  </TD>
-                </TR>
-              ))}
-            </TBody>
-          </Table>
+          <h2 className="mt-5 font-display text-xl font-semibold text-foreground">
+            Noch keine Trainer angelegt
+          </h2>
+
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Sobald die Trainerdaten vollständig vorliegen, werden hier Namen,
+            Standorte, Bewertungen und Zuständigkeiten angezeigt.
+          </p>
+
+          <div className="mt-7 grid gap-3 text-left sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <p className="text-sm font-semibold text-foreground">
+                Trainerprofile
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Name, Standort und Zuständigkeit auf einen Blick.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <p className="text-sm font-semibold text-foreground">
+                Bewertungen
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Rückmeldungen werden später verständlich je Trainer
+                zusammengefasst.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <p className="text-sm font-semibold text-foreground">
+                Entwicklung
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Positive Entwicklungen und Handlungsbedarf werden klar
+                dargestellt.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-7 rounded-xl border border-border bg-muted/20 px-5 py-4 text-left">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Icon name="trainer" size={16} />
+              </span>
+
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Für die Präsentation vorbereitet
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Es werden bewusst keine Beispielnamen oder erfundenen
+                  Leistungsdaten angezeigt.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </Card>
     </div>

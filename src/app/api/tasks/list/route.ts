@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export async function GET(request: Request) {
   try {
     const supabase = await createClient();
@@ -38,7 +41,9 @@ export async function GET(request: Request) {
     }
 
     const url = new URL(request.url);
-    const requestedLocationId = url.searchParams.get("locationId");
+
+    const requestedLocation =
+      url.searchParams.get("locationId") ?? "all";
 
     const canAccessAllOrganizationLocations = [
       "super_admin",
@@ -56,7 +61,10 @@ export async function GET(request: Request) {
           .eq("user_id", user.id);
 
       if (accessError) {
-        console.error("Task location access query failed:", accessError);
+        console.error(
+          "Task location access query failed:",
+          accessError
+        );
 
         return NextResponse.json(
           {
@@ -78,11 +86,53 @@ export async function GET(request: Request) {
       }
     }
 
+    let selectedLocationId: string | null = null;
+
+    if (requestedLocation !== "all") {
+      if (UUID_PATTERN.test(requestedLocation)) {
+        selectedLocationId = requestedLocation;
+      } else {
+        const { data: location, error: locationError } =
+          await supabaseAdmin
+            .from("locations")
+            .select("id")
+            .eq("organization_id", profile.organization_id)
+            .eq("slug", requestedLocation)
+            .maybeSingle();
+
+        if (locationError) {
+          console.error(
+            "Task location lookup failed:",
+            locationError
+          );
+
+          return NextResponse.json(
+            {
+              ok: false,
+              error: "Location could not be loaded.",
+            },
+            { status: 500 }
+          );
+        }
+
+        if (!location) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: "Location not found.",
+            },
+            { status: 404 }
+          );
+        }
+
+        selectedLocationId = location.id;
+      }
+    }
+
     if (
-      requestedLocationId &&
-      requestedLocationId !== "all" &&
+      selectedLocationId &&
       allowedLocationIds &&
-      !allowedLocationIds.includes(requestedLocationId)
+      !allowedLocationIds.includes(selectedLocationId)
     ) {
       return NextResponse.json(
         {
@@ -123,8 +173,8 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false })
       .limit(250);
 
-    if (requestedLocationId && requestedLocationId !== "all") {
-      query = query.eq("location_id", requestedLocationId);
+    if (selectedLocationId) {
+      query = query.eq("location_id", selectedLocationId);
     } else if (allowedLocationIds) {
       query = query.in("location_id", allowedLocationIds);
     }
