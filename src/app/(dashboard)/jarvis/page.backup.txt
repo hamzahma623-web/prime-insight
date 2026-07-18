@@ -1,0 +1,849 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { SectionHeading } from "@/components/ui/Primitives";
+import { Card } from "@/components/ui/Card";
+import { Select } from "@/components/ui/Select";
+import { Icon } from "@/lib/icons";
+import {
+  TIME_RANGES,
+  useFilters,
+} from "@/components/providers/FilterProvider";
+
+type ApiLocation = {
+  id: string;
+  name: string;
+  slug: string;
+  city: string | null;
+};
+
+type ApiFeedback = {
+  id: string;
+  location_id: string;
+  overall_rating: number;
+  status: string;
+  created_at: string;
+  comment?: string | null;
+  message?: string | null;
+  feedback_text?: string | null;
+  text?: string | null;
+  improvement_suggestion?: string | null;
+};
+
+type ApiTask = {
+  id: string;
+  location_id: string;
+  title?: string | null;
+  priority: "critical" | "high" | "medium" | "low";
+  status: "open" | "in_progress" | "done";
+  due_at: string | null;
+  created_at: string;
+};
+
+type LocationsResponse = {
+  ok: boolean;
+  locations?: ApiLocation[];
+  error?: string;
+};
+
+type FeedbackResponse = {
+  ok: boolean;
+  feedback?: ApiFeedback[];
+  error?: string;
+};
+
+type TasksResponse = {
+  ok: boolean;
+  tasks?: ApiTask[];
+  error?: string;
+};
+
+type JarvisResponse = {
+  headline: string;
+  body: string;
+  points?: string[];
+};
+
+type Message = {
+  id: string;
+  role: "user" | "assistant";
+  text?: string;
+  answer?: JarvisResponse;
+};
+
+type LiveReport = {
+  locationName: string;
+  periodLabel: string;
+  feedbackCount: number;
+  averageRating: number;
+  positiveFeedback: number;
+  neutralFeedback: number;
+  negativeFeedback: number;
+  openTasks: number;
+  urgentTasks: number;
+  overdueTasks: number;
+  completedTasks: number;
+  latestFeedbackText: string;
+};
+
+const SUGGESTIONS = [
+  "Wie ist die aktuelle Lage?",
+  "Gibt es kritische Probleme?",
+  "Was sollte ich als Nächstes tun?",
+  "Wie zufrieden sind unsere Mitglieder?",
+  "Wie viele Aufgaben sind noch offen?",
+];
+
+function getPeriodStart(timeRange: string) {
+  const daysByRange: Record<string, number> = {
+    "7d": 7,
+    "14d": 14,
+    "30d": 30,
+    "90d": 90,
+    "180d": 180,
+    "365d": 365,
+  };
+
+  const days = daysByRange[timeRange];
+
+  if (!days) {
+    return null;
+  }
+
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - days);
+
+  return start;
+}
+
+function getPeriodLabel(timeRange: string) {
+  const labels: Record<string, string> = {
+    "7d": "in den letzten 7 Tagen",
+    "14d": "in den letzten 14 Tagen",
+    "30d": "in den letzten 30 Tagen",
+    "90d": "in den letzten 90 Tagen",
+    "180d": "in den letzten 6 Monaten",
+    "365d": "in den letzten 12 Monaten",
+    all: "im gesamten Zeitraum",
+  };
+
+  return labels[timeRange] ?? "im ausgewählten Zeitraum";
+}
+
+function getFeedbackText(feedback?: ApiFeedback) {
+  if (!feedback) {
+    return "";
+  }
+
+  return (
+    feedback.comment ||
+    feedback.message ||
+    feedback.feedback_text ||
+    feedback.text ||
+    feedback.improvement_suggestion ||
+    ""
+  );
+}
+
+function formatRating(value: number) {
+  return value.toFixed(1).replace(".", ",");
+}
+
+function createAnswer(
+  question: string,
+  report: LiveReport
+): JarvisResponse {
+  const query = question.toLowerCase();
+
+  const asksForProblems =
+    query.includes("kritisch") ||
+    query.includes("problem") ||
+    query.includes("negativ") ||
+    query.includes("beschwerde") ||
+    query.includes("handlungsbedarf");
+
+  const asksForRecommendation =
+    query.includes("nächst") ||
+    query.includes("empfehl") ||
+    query.includes("tun") ||
+    query.includes("maßnahme") ||
+    query.includes("verbessern");
+
+  const asksForFeedback =
+    query.includes("zufrieden") ||
+    query.includes("feedback") ||
+    query.includes("bewertung") ||
+    query.includes("mitglieder");
+
+  const asksForTasks =
+    query.includes("aufgabe") ||
+    query.includes("offen") ||
+    query.includes("überfällig") ||
+    query.includes("erledigt");
+
+  if (asksForProblems) {
+    if (
+      report.negativeFeedback === 0 &&
+      report.urgentTasks === 0 &&
+      report.overdueTasks === 0
+    ) {
+      return {
+        headline: "Aktuell gibt es keine kritischen Probleme.",
+        body: `${report.locationName} zeigt ${report.periodLabel} keine dringenden Auffälligkeiten.`,
+        points: [
+          "Keine negativen Rückmeldungen",
+          "Keine dringenden offenen Aufgaben",
+          "Keine überfälligen Aufgaben",
+        ],
+      };
+    }
+
+    const points: string[] = [];
+
+    if (report.negativeFeedback > 0) {
+      points.push(
+        `${report.negativeFeedback} ${
+          report.negativeFeedback === 1
+            ? "negative Rückmeldung sollte"
+            : "negative Rückmeldungen sollten"
+        } geprüft werden.`
+      );
+    }
+
+    if (report.urgentTasks > 0) {
+      points.push(
+        `${report.urgentTasks} ${
+          report.urgentTasks === 1
+            ? "dringende Aufgabe ist"
+            : "dringende Aufgaben sind"
+        } noch offen.`
+      );
+    }
+
+    if (report.overdueTasks > 0) {
+      points.push(
+        `${report.overdueTasks} ${
+          report.overdueTasks === 1
+            ? "Aufgabe ist"
+            : "Aufgaben sind"
+        } überfällig.`
+      );
+    }
+
+    return {
+      headline: "Es gibt Themen, die geprüft werden sollten.",
+      body: `Für ${report.locationName} wurde Handlungsbedarf erkannt.`,
+      points,
+    };
+  }
+
+  if (asksForRecommendation) {
+    const points: string[] = [];
+
+    if (report.negativeFeedback > 0) {
+      points.push(
+        "Die negativen Rückmeldungen öffnen und die genannten Ursachen prüfen."
+      );
+    }
+
+    if (report.overdueTasks > 0) {
+      points.push(
+        "Überfällige Aufgaben priorisieren und einen klaren Verantwortlichen festlegen."
+      );
+    }
+
+    if (report.urgentTasks > 0) {
+      points.push(
+        "Dringende Aufgaben möglichst kurzfristig abschließen."
+      );
+    }
+
+    if (report.feedbackCount === 0) {
+      points.push(
+        "Mehr Mitglieder auf das Feedbackformular aufmerksam machen."
+      );
+    }
+
+    if (points.length === 0) {
+      points.push(
+        "Aktuell sind keine zusätzlichen Maßnahmen erforderlich."
+      );
+      points.push(
+        "Die positive Entwicklung weiter beobachten und beibehalten."
+      );
+    }
+
+    return {
+      headline: "Das ist jetzt am sinnvollsten.",
+      body: `Meine Empfehlung für ${report.locationName}:`,
+      points,
+    };
+  }
+
+  if (asksForFeedback) {
+    if (report.feedbackCount === 0) {
+      return {
+        headline: "Noch keine Rückmeldungen vorhanden.",
+        body: `${report.locationName} hat ${report.periodLabel} noch kein Feedback erhalten.`,
+        points: [
+          "Sobald Feedback eingeht, wird die Zufriedenheit automatisch ausgewertet.",
+        ],
+      };
+    }
+
+    const points = [
+      `${report.positiveFeedback} positiv`,
+      `${report.neutralFeedback} neutral`,
+      `${report.negativeFeedback} negativ`,
+    ];
+
+    if (report.latestFeedbackText) {
+      points.push(
+        `Neueste Rückmeldung: „${report.latestFeedbackText}“`
+      );
+    }
+
+    return {
+      headline: `Die durchschnittliche Bewertung liegt bei ${formatRating(
+        report.averageRating
+      )} von 5 Sternen.`,
+      body: `${report.locationName} hat ${report.periodLabel} insgesamt ${report.feedbackCount} ${
+        report.feedbackCount === 1
+          ? "Rückmeldung"
+          : "Rückmeldungen"
+      } erhalten.`,
+      points,
+    };
+  }
+
+  if (asksForTasks) {
+    if (report.openTasks === 0) {
+      return {
+        headline: "Aktuell sind alle Aufgaben erledigt.",
+        body: `Für ${report.locationName} gibt es momentan keine offenen Aufgaben.`,
+        points: [
+          `${report.completedTasks} ${
+            report.completedTasks === 1
+              ? "Aufgabe wurde"
+              : "Aufgaben wurden"
+          } im ausgewählten Zeitraum erledigt.`,
+        ],
+      };
+    }
+
+    return {
+      headline: `${report.openTasks} ${
+        report.openTasks === 1
+          ? "Aufgabe ist"
+          : "Aufgaben sind"
+      } noch offen.`,
+      body: `Hier ist der aktuelle Arbeitsstand für ${report.locationName}.`,
+      points: [
+        `${report.urgentTasks} dringend`,
+        `${report.overdueTasks} überfällig`,
+        `${report.completedTasks} erledigt`,
+      ],
+    };
+  }
+
+  if (
+    report.feedbackCount === 0 &&
+    report.openTasks === 0
+  ) {
+    return {
+      headline: "Aktuell liegen nur wenige Daten vor.",
+      body: `${report.locationName} hat ${report.periodLabel} noch keine Rückmeldungen und keine offenen Aufgaben.`,
+      points: [
+        "Es besteht aktuell kein sichtbarer Handlungsbedarf.",
+        "Neue Daten werden automatisch berücksichtigt.",
+      ],
+    };
+  }
+
+  const statusGood =
+    report.negativeFeedback === 0 &&
+    report.urgentTasks === 0 &&
+    report.overdueTasks === 0;
+
+  return {
+    headline: statusGood
+      ? "Die aktuelle Lage ist sehr gut."
+      : "Die Lage ist grundsätzlich stabil, sollte aber geprüft werden.",
+    body: `${report.locationName} hat ${report.periodLabel} ${
+      report.feedbackCount
+    } ${
+      report.feedbackCount === 1
+        ? "Rückmeldung"
+        : "Rückmeldungen"
+    } erhalten. Die Bewertung liegt bei ${
+      report.feedbackCount > 0
+        ? `${formatRating(report.averageRating)} von 5 Sternen`
+        : "noch keinem aussagekräftigen Wert"
+    }.`,
+    points: [
+      `${report.openTasks} offene Aufgaben`,
+      `${report.negativeFeedback} negative Rückmeldungen`,
+      `${report.overdueTasks} überfällige Aufgaben`,
+    ],
+  };
+}
+
+export default function JarvisPage() {
+  const {
+    locationId,
+    setLocationId,
+    timeRange,
+    setTimeRange,
+    locationOptions,
+  } = useFilters();
+
+  const [locations, setLocations] = useState<ApiLocation[]>([]);
+  const [feedback, setFeedback] = useState<ApiFeedback[]>([]);
+  const [tasks, setTasks] = useState<ApiTask[]>([]);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [input, setInput] = useState("");
+
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadData() {
+      setIsLoading(true);
+      setErrorMessage("");
+
+      try {
+        const [
+          locationsResponse,
+          feedbackResponse,
+          tasksResponse,
+        ] = await Promise.all([
+          fetch("/api/locations/list", {
+            cache: "no-store",
+            signal: controller.signal,
+          }),
+          fetch("/api/feedback/list", {
+            cache: "no-store",
+            signal: controller.signal,
+          }),
+          fetch("/api/tasks/list?locationId=all", {
+            cache: "no-store",
+            signal: controller.signal,
+          }),
+        ]);
+
+        const locationsResult =
+          (await locationsResponse.json()) as LocationsResponse;
+
+        const feedbackResult =
+          (await feedbackResponse.json()) as FeedbackResponse;
+
+        const tasksResult =
+          (await tasksResponse.json()) as TasksResponse;
+
+        if (!locationsResponse.ok || !locationsResult.ok) {
+          throw new Error(
+            locationsResult.error ||
+              "Standorte konnten nicht geladen werden."
+          );
+        }
+
+        if (!feedbackResponse.ok || !feedbackResult.ok) {
+          throw new Error(
+            feedbackResult.error ||
+              "Rückmeldungen konnten nicht geladen werden."
+          );
+        }
+
+        if (!tasksResponse.ok || !tasksResult.ok) {
+          throw new Error(
+            tasksResult.error ||
+              "Aufgaben konnten nicht geladen werden."
+          );
+        }
+
+        setLocations(locationsResult.locations ?? []);
+        setFeedback(feedbackResult.feedback ?? []);
+        setTasks(tasksResult.tasks ?? []);
+      } catch (error) {
+        if (
+          error instanceof DOMException &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        console.error("Jarvis loading failed:", error);
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Jarvis konnte die Daten nicht laden."
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadData();
+
+    return () => controller.abort();
+  }, []);
+
+  const report = useMemo<LiveReport>(() => {
+    const selectedLocation =
+      locationId === "all"
+        ? null
+        : locations.find(
+            (location) =>
+              location.id === locationId ||
+              location.slug === locationId
+          );
+
+    const selectedLocationIds =
+      locationId === "all"
+        ? locations.map((location) => location.id)
+        : selectedLocation
+          ? [selectedLocation.id]
+          : [];
+
+    const locationName =
+      locationId === "all"
+        ? locations.length === 1
+          ? locations[0]?.name ?? "Alle Standorte"
+          : "Alle Standorte"
+        : selectedLocation?.name ?? "Ausgewählter Standort";
+
+    const periodStart = getPeriodStart(timeRange);
+
+    const relevantFeedback = feedback
+      .filter((item) =>
+        selectedLocationIds.includes(item.location_id)
+      )
+      .filter((item) => {
+        if (!periodStart) {
+          return true;
+        }
+
+        return new Date(item.created_at) >= periodStart;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() -
+          new Date(a.created_at).getTime()
+      );
+
+    const relevantTasks = tasks
+      .filter((task) =>
+        selectedLocationIds.includes(task.location_id)
+      )
+      .filter((task) => {
+        if (!periodStart) {
+          return true;
+        }
+
+        return new Date(task.created_at) >= periodStart;
+      });
+
+    const feedbackCount = relevantFeedback.length;
+
+    const averageRating =
+      feedbackCount > 0
+        ? relevantFeedback.reduce(
+            (sum, item) =>
+              sum + Number(item.overall_rating ?? 0),
+            0
+          ) / feedbackCount
+        : 0;
+
+    const openTasks = relevantTasks.filter(
+      (task) => task.status !== "done"
+    );
+
+    return {
+      locationName,
+      periodLabel: getPeriodLabel(timeRange),
+      feedbackCount,
+      averageRating,
+      positiveFeedback: relevantFeedback.filter(
+        (item) => Number(item.overall_rating) >= 4
+      ).length,
+      neutralFeedback: relevantFeedback.filter(
+        (item) => Number(item.overall_rating) === 3
+      ).length,
+      negativeFeedback: relevantFeedback.filter(
+        (item) => Number(item.overall_rating) <= 2
+      ).length,
+      openTasks: openTasks.length,
+      urgentTasks: openTasks.filter(
+        (task) =>
+          task.priority === "critical" ||
+          task.priority === "high"
+      ).length,
+      overdueTasks: openTasks.filter(
+        (task) =>
+          Boolean(task.due_at) &&
+          new Date(task.due_at as string).getTime() <
+            Date.now()
+      ).length,
+      completedTasks: relevantTasks.filter(
+        (task) => task.status === "done"
+      ).length,
+      latestFeedbackText: getFeedbackText(
+        relevantFeedback[0]
+      ),
+    };
+  }, [
+    feedback,
+    locationId,
+    locations,
+    tasks,
+    timeRange,
+  ]);
+
+  useEffect(() => {
+    if (isLoading || errorMessage) {
+      return;
+    }
+
+    setMessages([
+      {
+        id: "intro",
+        role: "assistant",
+        answer: {
+          headline: `Ich habe ${report.locationName} im Blick.`,
+          body: `Die Auswertung basiert auf den echten Rückmeldungen und Aufgaben ${report.periodLabel}. Was möchtest du wissen?`,
+          points: [
+            `${report.feedbackCount} Rückmeldungen`,
+            `${report.openTasks} offene Aufgaben`,
+            report.feedbackCount > 0
+              ? `${formatRating(
+                  report.averageRating
+                )} von 5 Sternen`
+              : "Noch keine Bewertung",
+          ],
+        },
+      },
+    ]);
+  }, [
+    errorMessage,
+    isLoading,
+    report,
+    locationId,
+    timeRange,
+  ]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [messages]);
+
+  function send(text: string) {
+    const trimmed = text.trim();
+
+    if (!trimmed || isLoading) {
+      return;
+    }
+
+    const answer = createAnswer(trimmed, report);
+    const messageId = Date.now().toString();
+
+    setMessages((current) => [
+      ...current,
+      {
+        id: `user-${messageId}`,
+        role: "user",
+        text: trimmed,
+      },
+      {
+        id: `assistant-${messageId}`,
+        role: "assistant",
+        answer,
+      },
+    ]);
+
+    setInput("");
+  }
+
+  return (
+    <div>
+      <SectionHeading
+        eyebrow="Assistent der Geschäftsführung"
+        title="Jarvis"
+        description="Klare Antworten aus deinen aktuellen Standortdaten."
+        action={
+          <div className="flex items-center gap-2">
+            <Select
+              ariaLabel="Standort für Jarvis"
+              icon="location"
+              value={locationId}
+              options={locationOptions}
+              onChange={setLocationId}
+            />
+
+            <Select
+              ariaLabel="Zeitraum für Jarvis"
+              icon="clock"
+              value={timeRange}
+              options={TIME_RANGES}
+              onChange={(value) =>
+                setTimeRange(value as typeof timeRange)
+              }
+            />
+          </div>
+        }
+      />
+
+      {errorMessage ? (
+        <div className="mb-5 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+          {errorMessage}
+        </div>
+      ) : null}
+
+      <Card className="flex h-[calc(100vh-13rem)] min-h-[560px] flex-col">
+        <div className="flex-1 space-y-5 overflow-y-auto p-5">
+          {isLoading ? (
+            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+              Jarvis wertet die aktuellen Daten aus ...
+            </div>
+          ) : (
+            messages.map((message) =>
+              message.role === "user" ? (
+                <div
+                  key={message.id}
+                  className="flex justify-end"
+                >
+                  <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-4 py-3 text-sm text-primary-foreground">
+                    {message.text}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  key={message.id}
+                  className="flex gap-3"
+                >
+                  <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                    <Icon name="jarvis" size={17} />
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <AnswerBlock answer={message.answer!} />
+                  </div>
+                </div>
+              )
+            )
+          )}
+
+          <div ref={endRef} />
+        </div>
+
+        {!isLoading && !errorMessage ? (
+          <div className="border-t border-border px-5 py-3">
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Häufige Fragen
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {SUGGESTIONS.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => send(suggestion)}
+                  className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-accent hover:text-accent"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="border-t border-border p-4">
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-1.5 focus-within:ring-2 focus-within:ring-ring">
+            <input
+              value={input}
+              onChange={(event) =>
+                setInput(event.target.value)
+              }
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  send(input);
+                }
+              }}
+              disabled={isLoading || Boolean(errorMessage)}
+              placeholder="Frag Jarvis nach der aktuellen Lage ..."
+              className="h-9 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+            />
+
+            <button
+              type="button"
+              onClick={() => send(input)}
+              disabled={
+                !input.trim() ||
+                isLoading ||
+                Boolean(errorMessage)
+              }
+              aria-label="Senden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              <Icon name="send" size={16} />
+            </button>
+          </div>
+
+          <p className="mt-2 text-center text-[11px] text-muted-foreground">
+            Antworten basieren auf den aktuell gespeicherten Standortdaten.
+          </p>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function AnswerBlock({
+  answer,
+}: {
+  answer: JarvisResponse;
+}) {
+  return (
+    <div className="rounded-2xl rounded-tl-sm border border-border bg-muted/40 p-4">
+      <p className="text-sm font-semibold text-foreground">
+        {answer.headline}
+      </p>
+
+      <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
+        {answer.body}
+      </p>
+
+      {answer.points && answer.points.length > 0 ? (
+        <div className="mt-4 space-y-2">
+          {answer.points.map((point) => (
+            <div
+              key={point}
+              className="flex items-start gap-3 rounded-xl border border-border bg-card px-3 py-2.5"
+            >
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+
+              <p className="text-sm leading-5 text-foreground">
+                {point}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="mt-4 flex items-center gap-1.5 border-t border-border pt-3 text-xs text-muted-foreground">
+        <Icon name="reports" size={13} />
+        Live-Auswertung aus Feedbacks und Aufgaben
+      </div>
+    </div>
+  );
+}
