@@ -5,17 +5,51 @@ type Variant = "primary" | "secondary" | "ghost" | "accent";
 type Size = "sm" | "md";
 
 const VARIANT: Record<Variant, string> = {
-  primary:
-    "bg-primary text-primary-foreground hover:opacity-90 active:opacity-100",
-  accent: "bg-accent text-accent-foreground hover:opacity-90",
-  secondary:
-    "border border-border bg-card text-foreground hover:bg-muted",
-  ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
+  primary: [
+    "bg-primary text-primary-foreground",
+    "shadow-sm",
+    "hover:-translate-y-0.5",
+    "hover:shadow-lg",
+    "active:translate-y-0",
+    "active:scale-[0.98]",
+    "transition-all duration-200 ease-out",
+  ].join(" "),
+
+  accent: [
+    "bg-accent text-accent-foreground",
+    "shadow-sm",
+    "hover:-translate-y-0.5",
+    "hover:brightness-110",
+    "hover:shadow-lg",
+    "active:translate-y-0",
+    "active:scale-[0.98]",
+    "transition-all duration-200 ease-out",
+  ].join(" "),
+
+  secondary: [
+    "border border-border",
+    "bg-card",
+    "text-foreground",
+    "hover:bg-muted",
+    "hover:border-border/80",
+    "hover:-translate-y-0.5",
+    "hover:shadow-md",
+    "active:translate-y-0",
+    "active:scale-[0.98]",
+    "transition-all duration-200 ease-out",
+  ].join(" "),
+
+  ghost: [
+    "text-muted-foreground",
+    "hover:bg-muted",
+    "hover:text-foreground",
+    "transition-all duration-200",
+  ].join(" "),
 };
 
 const SIZE: Record<Size, string> = {
-  sm: "h-8 px-3 text-xs gap-1.5",
-  md: "h-9 px-4 text-sm gap-2",
+  sm: "h-9 px-4 text-xs gap-2 rounded-xl",
+  md: "h-11 px-5 text-sm gap-2 rounded-xl",
 };
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -34,12 +68,20 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center rounded-lg font-medium transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center",
+        "font-medium",
+        "select-none",
+        "whitespace-nowrap",
+        "focus-visible:outline-none",
+        "focus-visible:ring-2",
+        "focus-visible:ring-ring",
+        "focus-visible:ring-offset-2",
+        "focus-visible:ring-offset-background",
+        "disabled:pointer-events-none",
+        "disabled:opacity-50",
         VARIANT[variant],
         SIZE[size],
-        className,
+        className
       )}
       {...props}
     >

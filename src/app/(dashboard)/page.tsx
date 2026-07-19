@@ -196,30 +196,51 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <section className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm font-medium text-accent">
-            {locationLabel}
-          </p>
+      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-background px-6 py-7 shadow-[0_24px_70px_-36px_rgba(0,0,0,0.28)] sm:px-8 sm:py-9">
+  <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
+  <div className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-foreground/[0.04] blur-3xl" />
 
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            {getGreeting()}
-            {userName ? `, ${userName}` : ""}
-          </h1>
+  <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className="max-w-2xl">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+          <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_0_4px_hsl(var(--accent)/0.12)]" />
+          Live Übersicht
+        </span>
 
-          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-            Hier siehst du sofort, was heute wichtig ist.
-          </p>
-        </div>
+        <span className="text-sm font-medium text-muted-foreground">
+          {locationLabel}
+        </span>
+      </div>
 
-        <Link
-          href="/jarvis"
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <Icon name="jarvis" size={18} />
-          Jarvis fragen
-        </Link>
-      </section>
+      <h1 className="mt-5 font-display text-3xl font-semibold tracking-[-0.04em] text-foreground sm:text-5xl">
+        {getGreeting()}
+        {userName ? `, ${userName}` : ""}
+      </h1>
+
+      <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+        Alle wichtigen Aufgaben, Bewertungen und Rückmeldungen für deinen Standort auf einen Blick.
+      </p>
+    </div>
+
+    <Link
+      href="/jarvis"
+      className="group inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-foreground px-5 text-sm font-semibold text-background shadow-[0_14px_35px_-18px_rgba(0,0,0,0.6)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_45px_-20px_rgba(0,0,0,0.7)]"
+    >
+      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-background/10 transition-transform duration-300 group-hover:scale-105">
+        <Icon name="jarvis" size={17} />
+      </span>
+
+      Jarvis fragen
+
+      <Icon
+        name="chevronRight"
+        size={15}
+        className="transition-transform duration-300 group-hover:translate-x-0.5"
+      />
+    </Link>
+  </div>
+</section>
 
       {errorMessage ? (
         <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
@@ -491,33 +512,50 @@ export default function DashboardPage() {
       </div>
 
       <section>
-        <Card className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
-              <Icon name="jarvis" size={23} />
+  <Card className="group relative overflow-hidden border-foreground/10 bg-foreground p-0 text-background shadow-[0_28px_80px_-36px_rgba(0,0,0,0.7)]">
+    <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-accent/20 blur-3xl transition-transform duration-700 group-hover:scale-110" />
+
+    <div className="pointer-events-none absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-background/5 blur-3xl" />
+
+    <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <div className="flex items-start gap-4">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-background/10 bg-background/10 text-accent shadow-[0_12px_35px_-18px_hsl(var(--accent)/0.8)] backdrop-blur">
+          <Icon name="jarvis" size={25} />
+        </span>
+
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl font-semibold tracking-tight text-background">
+              Was möchtest du wissen?
+            </h2>
+
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              Bereit
             </span>
-
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                Was möchtest du wissen?
-              </h2>
-
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Frag Jarvis nach Problemen, Feedbacks oder
-                offenen Aufgaben.
-              </p>
-            </div>
           </div>
 
-          <Link
-            href="/jarvis"
-            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-          >
-            Jarvis öffnen
-            <Icon name="chevronRight" size={16} />
-          </Link>
-        </Card>
-      </section>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-background/60">
+            Frag Jarvis nach Problemen, Feedbacks oder offenen Aufgaben und erhalte sofort eine kompakte Übersicht.
+          </p>
+        </div>
+      </div>
+
+      <Link
+        href="/jarvis"
+        className="group/button inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-background px-5 text-sm font-semibold text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:bg-background/90"
+      >
+        Jarvis öffnen
+
+        <Icon
+          name="chevronRight"
+          size={16}
+          className="transition-transform duration-300 group-hover/button:translate-x-1"
+        />
+      </Link>
+    </div>
+  </Card>
+</section>
     </div>
   );
 }

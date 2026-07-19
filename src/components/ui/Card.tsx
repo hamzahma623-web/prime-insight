@@ -11,8 +11,13 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border bg-card text-card-foreground shadow-sm",
-        className,
+        "relative rounded-[var(--radius-card)]",
+        "border border-border",
+        "bg-card text-card-foreground",
+        "shadow-[var(--shadow-flat)]",
+        "transition-[border-color,box-shadow] duration-200 ease-out",
+        "hover:border-foreground/15 hover:shadow-[var(--shadow-raised)]",
+        className
       )}
     >
       {children}
@@ -34,16 +39,18 @@ export function CardHeader({
   return (
     <div
       className={cn(
-        "flex items-start justify-between gap-4 px-5 pt-5",
-        className,
+        "flex items-start justify-between gap-5 px-6 pt-6",
+        className
       )}
     >
       <div className="min-w-0">
-        <h3 className="text-sm font-semibold tracking-tight text-foreground">
+        <h3 className="font-display text-base font-semibold tracking-[var(--tracking-tight)] text-foreground">
           {title}
         </h3>
         {subtitle ? (
-          <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
+          <p className="mt-1.5 max-w-2xl text-sm leading-5 text-muted-foreground">
+            {subtitle}
+          </p>
         ) : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -58,5 +65,5 @@ export function CardBody({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={cn("p-5", className)}>{children}</div>;
+  return <div className={cn("p-6 pt-5", className)}>{children}</div>;
 }

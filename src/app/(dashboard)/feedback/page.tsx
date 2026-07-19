@@ -37,9 +37,6 @@ type ApiFeedback = {
   staff_rating: number | null;
   comment: string | null;
   improvement_suggestion: string | null;
-  wants_contact: boolean;
-  contact_email: string | null;
-  contact_phone: string | null;
   status: "new" | "reviewed" | "resolved";
   created_at: string;
   locations: LocationData | LocationData[] | null;
@@ -156,10 +153,6 @@ function getTags(feedback: ApiFeedback): string[] {
     feedback.staff_rating <= 3
   ) {
     tags.push("Personal");
-  }
-
-  if (feedback.wants_contact) {
-    tags.push("Kontakt gewünscht");
   }
 
   return tags;
@@ -595,6 +588,7 @@ export default function FeedbackPage() {
                             ))}
                           </div>
                         ) : null}
+
                       </TD>
 
                       <TD className="whitespace-nowrap text-sm">
@@ -862,6 +856,7 @@ export default function FeedbackPage() {
           </div>
         </div>
       ) : null}
+
     </div>
   );
 }

@@ -67,10 +67,6 @@ export default function PublicFeedbackPage() {
   const [comment, setComment] = useState("");
   const [improvementSuggestion, setImprovementSuggestion] = useState("");
 
-  const [wantsContact, setWantsContact] = useState(false);
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -88,9 +84,9 @@ export default function PublicFeedbackPage() {
           throw new Error("Standorte konnten nicht geladen werden.");
         }
 
-        const matchingLocation = (
-          result.locations as Location[]
-        ).find((item) => item.slug === slug);
+        const matchingLocation = (result.locations as Location[]).find(
+          (item) => item.slug === slug
+        );
 
         if (!matchingLocation) {
           throw new Error("Dieser Standort wurde nicht gefunden.");
@@ -99,6 +95,7 @@ export default function PublicFeedbackPage() {
         setLocation(matchingLocation);
       } catch (error) {
         console.error("Location loading failed:", error);
+
         setErrorMessage(
           error instanceof Error
             ? error.message
@@ -143,9 +140,6 @@ export default function PublicFeedbackPage() {
           staffRating: staffRating || undefined,
           comment,
           improvementSuggestion,
-          wantsContact,
-          contactEmail: wantsContact ? contactEmail : undefined,
-          contactPhone: wantsContact ? contactPhone : undefined,
         }),
       });
 
@@ -187,9 +181,7 @@ export default function PublicFeedbackPage() {
             Standort nicht gefunden
           </h1>
 
-          <p className="mt-3 text-sm text-slate-500">
-            {errorMessage}
-          </p>
+          <p className="mt-3 text-sm text-slate-500">{errorMessage}</p>
         </div>
       </main>
     );
@@ -208,8 +200,7 @@ export default function PublicFeedbackPage() {
           </h1>
 
           <p className="mt-3 text-slate-500">
-            Dein Feedback für {location.name} wurde erfolgreich
-            übermittelt.
+            Dein Feedback für {location.name} wurde erfolgreich übermittelt.
           </p>
         </div>
       </main>
@@ -307,63 +298,6 @@ export default function PublicFeedbackPage() {
               className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
             />
           </div>
-
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4">
-            <input
-              type="checkbox"
-              checked={wantsContact}
-              onChange={(event) => setWantsContact(event.target.checked)}
-              className="mt-1 h-4 w-4"
-            />
-
-            <span>
-              <span className="block text-sm font-semibold text-slate-800">
-                Ich möchte kontaktiert werden
-              </span>
-
-              <span className="block text-sm text-slate-500">
-                Das Studio darf sich zu meinem Feedback bei mir melden.
-              </span>
-            </span>
-          </label>
-
-          {wantsContact ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="contactEmail"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
-                >
-                  E-Mail
-                </label>
-
-                <input
-                  id="contactEmail"
-                  type="email"
-                  value={contactEmail}
-                  onChange={(event) => setContactEmail(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="contactPhone"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
-                >
-                  Telefon
-                </label>
-
-                <input
-                  id="contactPhone"
-                  type="tel"
-                  value={contactPhone}
-                  onChange={(event) => setContactPhone(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-emerald-500"
-                />
-              </div>
-            </div>
-          ) : null}
 
           {errorMessage ? (
             <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

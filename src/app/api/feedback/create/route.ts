@@ -10,9 +10,6 @@ type FeedbackRequest = {
   staffRating?: number;
   comment?: string;
   improvementSuggestion?: string;
-  wantsContact?: boolean;
-  contactEmail?: string;
-  contactPhone?: string;
 };
 
 function validOptionalRating(value: unknown): boolean {
@@ -95,9 +92,6 @@ export async function POST(request: Request) {
         comment: body.comment?.trim() || null,
         improvement_suggestion:
           body.improvementSuggestion?.trim() || null,
-        wants_contact: body.wantsContact ?? false,
-        contact_email: body.contactEmail?.trim() || null,
-        contact_phone: body.contactPhone?.trim() || null,
       })
       .select("id, created_at")
       .single();

@@ -60,6 +60,15 @@ type JarvisApiResponse = {
   error?: string;
 };
 
+type CreateTaskApiResponse = {
+  ok: boolean;
+  task?: {
+    id: string;
+    title: string;
+  };
+  error?: string;
+};
+
 type ChatMessage = {
   id: string;
   role: "user" | "assistant";
@@ -94,6 +103,29 @@ function createMessageId() {
   return `${Date.now()}-${Math.random()
     .toString(36)
     .slice(2)}`;
+}
+
+function isTaskConfirmation(message: string) {
+  const normalized = message
+    .trim()
+    .toLowerCase()
+    .replace(/[.!?,]/g, "")
+    .replace(/\s+/g, " ");
+
+  return [
+    "ja",
+    "ja bitte",
+    "ja bitte erstellen",
+    "ja bitte anlegen",
+    "bitte erstellen",
+    "bitte anlegen",
+    "erstelle die aufgabe",
+    "erstelle sie",
+    "leg die aufgabe an",
+    "leg sie an",
+    "mach das",
+    "mach sie",
+  ].includes(normalized);
 }
 
 function getGreeting() {
@@ -186,6 +218,9 @@ export default function JarvisPage() {
 
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const createdDraftMessageIdsRef = useRef<Set<string>>(
+    new Set()
+  );
 
   /*
    * Verhindert doppelte Startbriefings, zum Beispiel
@@ -324,6 +359,51 @@ export default function JarvisPage() {
     });
   }, [messages, isThinking]);
 
+  async function createTaskFromDraft(
+    task: JarvisTaskDraft
+  ) {
+    const taskLocationId =
+      task.locationId ||
+      (locationId !== "all" ? locationId : null);
+
+    if (!taskLocationId) {
+      throw new Error(
+        "Bitte wähle zuerst einen konkreten Standort aus, bevor Jarvis die Aufgabe erstellt."
+      );
+    }
+
+    const response = await fetch("/api/tasks/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        locationId: taskLocationId,
+        feedbackId: task.feedbackId,
+        title: task.title,
+        description: task.description || null,
+        priority: task.priority,
+        status: "open",
+        category: task.category || "Allgemein",
+        assigneeName: null,
+        source: "Jarvis",
+        dueAt: null,
+      }),
+    });
+
+    const result =
+      (await response.json()) as CreateTaskApiResponse;
+
+    if (!response.ok || !result.ok || !result.task) {
+      throw new Error(
+        result.error ||
+          "Die Aufgabe konnte nicht erstellt werden."
+      );
+    }
+
+    return result.task;
+  }
+
   async function sendMessage(text: string) {
     const trimmed = text.trim();
 
@@ -345,6 +425,75 @@ export default function JarvisPage() {
     setInput("");
     setErrorMessage("");
     setIsThinking(true);
+
+    const latestDraftMessage = [...messages]
+      .reverse()
+      .find(
+        (message) =>
+          message.role === "assistant" &&
+          Boolean(message.answer?.taskDrafts.length) &&
+          !createdDraftMessageIdsRef.current.has(
+            message.id
+          )
+      );
+
+    if (
+      isTaskConfirmation(trimmed) &&
+      latestDraftMessage?.answer?.taskDrafts.length
+    ) {
+      try {
+        const createdTasks = [];
+
+        for (const taskDraft of latestDraftMessage.answer
+          .taskDrafts) {
+          const createdTask =
+            await createTaskFromDraft(taskDraft);
+
+          createdTasks.push(createdTask);
+        }
+
+        createdDraftMessageIdsRef.current.add(
+          latestDraftMessage.id
+        );
+
+        const createdTitles = createdTasks
+          .map((task) => `„${task.title}“`)
+          .join(", ");
+
+        const confirmationMessage: ChatMessage = {
+          id: createMessageId(),
+          role: "assistant",
+          content:
+            createdTasks.length === 1
+              ? `✅ Die Aufgabe ${createdTitles} wurde erstellt und ist jetzt im Bereich „Aufgaben“ sichtbar.`
+              : `✅ Die Aufgaben ${createdTitles} wurden erstellt und sind jetzt im Bereich „Aufgaben“ sichtbar.`,
+        };
+
+        setMessages((current) => [
+          ...current,
+          confirmationMessage,
+        ]);
+      } catch (error) {
+        console.error(
+          "Jarvis task creation failed:",
+          error
+        );
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Die Aufgabe konnte nicht erstellt werden."
+        );
+      } finally {
+        setIsThinking(false);
+
+        window.setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
+      }
+
+      return;
+    }
 
     try {
       const response = await fetch("/api/jarvis/chat", {
