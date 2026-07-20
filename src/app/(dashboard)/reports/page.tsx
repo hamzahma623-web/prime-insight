@@ -325,9 +325,7 @@ export default function ReportsPage() {
 
     const overdueTasks = openTasks.filter(
       (task) =>
-        Boolean(task.due_at) &&
-        new Date(task.due_at as string).getTime() <
-          Date.now()
+        task.due_at != null && Date.now() - new Date(task.due_at).getTime() > 0
     ).length;
 
     return {
@@ -353,9 +351,8 @@ export default function ReportsPage() {
         title: "Bitte kurz prüfen",
         description:
           "Es gibt mindestens ein Thema, das deine Aufmerksamkeit benötigt.",
-        className:
-          "border-amber-500/30 bg-amber-500/10 text-amber-400",
-        dotClassName: "bg-amber-400",
+        className: "border-warning/30 bg-warning-soft text-warning",
+        dotClassName: "bg-warning",
       };
     }
 
@@ -367,9 +364,8 @@ export default function ReportsPage() {
         title: "Alles läuft sehr gut",
         description:
           "Momentan besteht kein unmittelbarer Handlungsbedarf.",
-        className:
-          "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
-        dotClassName: "bg-emerald-400",
+        className: "border-accent/30 bg-accent-soft text-accent",
+        dotClassName: "bg-accent",
       };
     }
 
@@ -378,8 +374,7 @@ export default function ReportsPage() {
         title: "Noch nicht genug Rückmeldungen",
         description:
           "Sobald neue Rückmeldungen eingehen, erscheint hier eine Bewertung.",
-        className:
-          "border-border bg-muted/30 text-muted-foreground",
+        className: "border-border bg-muted text-muted-foreground",
         dotClassName: "bg-muted-foreground",
       };
     }
@@ -388,9 +383,8 @@ export default function ReportsPage() {
       title: "Entwicklung beobachten",
       description:
         "Die Ergebnisse sind grundsätzlich stabil, sollten aber weiter beobachtet werden.",
-      className:
-        "border-blue-500/30 bg-blue-500/10 text-blue-400",
-      dotClassName: "bg-blue-400",
+      className: "border-info/30 bg-info-soft text-info",
+      dotClassName: "bg-info",
     };
   }, [report]);
 
@@ -494,27 +488,52 @@ export default function ReportsPage() {
       />
 
       {errorMessage ? (
-        <div className="mb-6 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div className="animate-fade mb-6 rounded-[var(--radius-card)] border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
           {errorMessage}
         </div>
       ) : null}
 
       {isLoading ? (
-        <div className="rounded-xl border border-dashed border-border px-6 py-14 text-center text-sm text-muted-foreground">
-          Der Standortbericht wird geladen ...
+        <div className="space-y-5">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <Card key={i} className="p-5">
+                <div className="space-y-3">
+                  <span className="skeleton block h-3 w-20" />
+                  <span className="skeleton block h-8 w-16" />
+                  <span className="skeleton block h-3 w-24" />
+                </div>
+              </Card>
+            ))}
+          </div>
+          <div className="grid gap-5 xl:grid-cols-2">
+            {[0, 1].map((i) => (
+              <Card key={i} className="p-6">
+                <span className="skeleton block h-6 w-40" />
+                <div className="mt-5 space-y-3">
+                  {[0, 1, 2].map((j) => (
+                    <span
+                      key={j}
+                      className="skeleton block h-12 rounded-[var(--radius-card)]"
+                    />
+                  ))}
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Card className="p-5">
+            <Card className="interactive p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-eyebrow text-muted-foreground">
                     Bewertung
                   </p>
 
                   <div className="mt-2 flex items-end gap-1">
-                    <span className="font-display text-3xl font-semibold text-foreground">
+                    <span className="font-display text-3xl font-semibold tracking-[var(--tracking-tight)] text-foreground tabular-nums">
                       {report.feedbackCount > 0
                         ? report.averageRating
                             .toFixed(1)
@@ -530,7 +549,7 @@ export default function ReportsPage() {
                   </div>
                 </div>
 
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
                   <Icon name="feedback" size={18} />
                 </span>
               </div>
@@ -550,19 +569,19 @@ export default function ReportsPage() {
               )}
             </Card>
 
-            <Card className="p-5">
+            <Card className="interactive p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-eyebrow text-muted-foreground">
                     Rückmeldungen
                   </p>
 
-                  <p className="mt-2 font-display text-3xl font-semibold text-foreground">
+                  <p className="mt-2 font-display text-3xl font-semibold tracking-[var(--tracking-tight)] text-foreground tabular-nums">
                     {report.feedbackCount}
                   </p>
                 </div>
 
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
                   <Icon name="feedback" size={18} />
                 </span>
               </div>
@@ -574,19 +593,19 @@ export default function ReportsPage() {
               </p>
             </Card>
 
-            <Card className="p-5">
+            <Card className="interactive p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-eyebrow text-muted-foreground">
                     Offene Aufgaben
                   </p>
 
-                  <p className="mt-2 font-display text-3xl font-semibold text-foreground">
+                  <p className="mt-2 font-display text-3xl font-semibold tracking-[var(--tracking-tight)] text-foreground tabular-nums">
                     {report.openTasks}
                   </p>
                 </div>
 
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
                   <Icon name="tasks" size={18} />
                 </span>
               </div>
@@ -598,16 +617,16 @@ export default function ReportsPage() {
             </Card>
 
             <Card className="p-5">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-eyebrow text-muted-foreground">
                 Gesamtstatus
               </p>
 
               <div
-                className={`mt-3 rounded-xl border p-3 ${overallStatus.className}`}
+                className={`mt-3 rounded-[var(--radius-card)] border p-3 ${overallStatus.className}`}
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className={`h-2.5 w-2.5 rounded-full ${overallStatus.dotClassName}`}
+                    className={`h-2 w-2 rounded-full ${overallStatus.dotClassName}`}
                   />
 
                   <p className="text-sm font-semibold">
@@ -625,12 +644,12 @@ export default function ReportsPage() {
           <div className="mt-5 grid gap-5 xl:grid-cols-2">
             <Card className="p-6">
               <div className="flex items-center gap-3">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
-                  <Icon name="feedback" size={18} />
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-control)] border border-accent/20 bg-accent-soft text-accent">
+                  <Icon name="check" size={18} />
                 </span>
 
                 <div>
-                  <h2 className="font-display text-lg font-semibold text-foreground">
+                  <h2 className="font-display text-lg font-semibold tracking-[var(--tracking-tight)] text-foreground">
                     Was läuft gut?
                   </h2>
 
@@ -644,10 +663,10 @@ export default function ReportsPage() {
                 {positivePoints.map((point) => (
                   <div
                     key={point}
-                    className="flex items-start gap-3 rounded-xl border border-border bg-muted/20 px-4 py-3"
+                    className="flex items-start gap-3 rounded-[var(--radius-card)] border border-border bg-muted/25 px-4 py-3"
                   >
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-bold text-emerald-400">
-                      ✓
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent-soft text-accent">
+                      <Icon name="check" size={12} />
                     </span>
 
                     <p className="text-sm leading-6 text-foreground">
@@ -660,12 +679,12 @@ export default function ReportsPage() {
 
             <Card className="p-6">
               <div className="flex items-center gap-3">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
                   <Icon name="reports" size={18} />
                 </span>
 
                 <div>
-                  <h2 className="font-display text-lg font-semibold text-foreground">
+                  <h2 className="font-display text-lg font-semibold tracking-[var(--tracking-tight)] text-foreground">
                     Unsere Empfehlung
                   </h2>
 
@@ -675,13 +694,13 @@ export default function ReportsPage() {
                 </div>
               </div>
 
-              <div className="mt-5 rounded-xl border border-border bg-muted/20 p-5">
+              <div className="mt-5 rounded-[var(--radius-card)] border border-border bg-muted/25 p-5">
                 {recommendations.map((recommendation) => (
                   <div
                     key={recommendation}
                     className="flex items-start gap-3 py-2 first:pt-0 last:pb-0"
                   >
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
 
                     <p className="text-sm leading-6 text-foreground">
                       {recommendation}
@@ -695,7 +714,7 @@ export default function ReportsPage() {
           <Card className="mt-5 p-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="font-display text-lg font-semibold text-foreground">
+                <h2 className="font-display text-lg font-semibold tracking-[var(--tracking-tight)] text-foreground">
                   Neueste Rückmeldungen
                 </h2>
 
@@ -710,7 +729,7 @@ export default function ReportsPage() {
             </div>
 
             {filteredFeedback.length === 0 ? (
-              <div className="mt-5 rounded-xl border border-dashed border-border px-5 py-10 text-center">
+              <div className="surface mt-5 rounded-[var(--radius-card)] px-5 py-10 text-center">
                 <p className="font-semibold text-foreground">
                   Noch keine Rückmeldungen
                 </p>

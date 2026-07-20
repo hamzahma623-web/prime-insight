@@ -1,12 +1,14 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/format";
 
 export function Card({
   children,
   className,
+  style,
 }: {
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }) {
   return (
     <div
@@ -14,6 +16,7 @@ export function Card({
         "card card-hover relative text-card-foreground",
         className
       )}
+      style={style}
     >
       {children}
     </div>

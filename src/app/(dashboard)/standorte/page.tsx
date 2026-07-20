@@ -9,13 +9,10 @@ import { useFilters } from "@/components/providers/FilterProvider";
 
 type ApiLocation = {
   id: string;
-  organization_id: string;
   name: string;
   slug: string;
   city: string | null;
-  address: string | null;
   is_active: boolean;
-  created_at: string;
 };
 
 type ApiFeedback = {
@@ -24,11 +21,16 @@ type ApiFeedback = {
   overall_rating: number;
   status: string;
   created_at: string;
+  comment?: string | null;
+  message?: string | null;
+  feedback_text?: string | null;
+  text?: string | null;
 };
 
 type ApiTask = {
   id: string;
   location_id: string;
+  title?: string;
   priority: "critical" | "high" | "medium" | "low";
   status: "open" | "in_progress" | "done";
   due_at: string | null;
@@ -73,8 +75,7 @@ function getStatus(summary: LocationSummary) {
   ) {
     return {
       label: "Handlungsbedarf",
-      className:
-        "border-danger/30 bg-danger/10 text-danger",
+      className: "border-danger/30 bg-danger-soft text-danger",
       dotClassName: "bg-danger",
     };
   }
@@ -85,17 +86,15 @@ function getStatus(summary: LocationSummary) {
   ) {
     return {
       label: "Beobachten",
-      className:
-        "border-amber-500/30 bg-amber-500/10 text-amber-500",
-      dotClassName: "bg-amber-500",
+      className: "border-warning/30 bg-warning-soft text-warning",
+      dotClassName: "bg-warning",
     };
   }
 
   return {
     label: "Alles im grünen Bereich",
-    className:
-      "border-emerald-500/30 bg-emerald-500/10 text-emerald-500",
-    dotClassName: "bg-emerald-500",
+    className: "border-accent/30 bg-accent-soft text-accent",
+    dotClassName: "bg-accent",
   };
 }
 
@@ -260,9 +259,7 @@ export default function StandortePage() {
 
       const overdueTasks = openLocationTasks.filter(
         (task) =>
-          Boolean(task.due_at) &&
-          new Date(task.due_at as string).getTime() <
-            Date.now()
+          task.due_at != null && Date.now() - new Date(task.due_at).getTime() > 0
       ).length;
 
       return {
@@ -308,49 +305,85 @@ export default function StandortePage() {
       />
 
       {errorMessage ? (
-        <div className="mb-6 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div className="animate-fade mb-6 rounded-[var(--radius-card)] border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
           {errorMessage}
         </div>
       ) : null}
 
       {isLoading ? (
-        <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
-          Standortdaten werden geladen ...
+        <div className="grid gap-5 xl:grid-cols-2">
+          {[0, 1].map((i) => (
+            <Card key={i} className="p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <span className="skeleton block h-6 w-48" />
+                  <span className="skeleton block h-4 w-24" />
+                </div>
+                <span className="skeleton h-7 w-32 rounded-[var(--radius-pill)]" />
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                {[0, 1, 2].map((j) => (
+                  <div
+                    key={j}
+                    className="surface space-y-3 rounded-[var(--radius-card)] p-4"
+                  >
+                    <span className="skeleton block h-3 w-16" />
+                    <span className="skeleton block h-8 w-14" />
+                    <span className="skeleton block h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {[0, 1].map((k) => (
+                  <span
+                    key={k}
+                    className="skeleton h-16 rounded-[var(--radius-card)]"
+                  />
+                ))}
+              </div>
+            </Card>
+          ))}
         </div>
       ) : visibleSummaries.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center">
-          <Icon
-            name="location"
-            size={24}
-            className="mx-auto text-muted-foreground"
-          />
+        <div className="surface flex flex-col items-center rounded-[var(--radius-surface)] px-6 py-14 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-card)] border border-border bg-muted text-muted-foreground">
+            <Icon name="location" size={24} />
+          </span>
 
-          <p className="mt-3 font-semibold text-foreground">
+          <p className="mt-4 font-semibold text-foreground">
             Kein Standort gefunden
           </p>
 
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1.5 text-sm text-muted-foreground">
             Für diesen Filter gibt es keinen verfügbaren Standort.
           </p>
         </div>
       ) : (
         <div className="grid gap-5 xl:grid-cols-2">
-          {visibleSummaries.map((summary) => {
+          {visibleSummaries.map((summary, index) => {
             const status = getStatus(summary);
 
             return (
               <Card
                 key={summary.location.id}
-                className="p-6"
+                className="animate-rise interactive p-6"
+                style={{ animationDelay: `${index * 60}ms` }}
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`h-2.5 w-2.5 rounded-full ${status.dotClassName}`}
-                      />
+                    <div className="flex items-center gap-2.5">
+                      <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+                        <span
+                          className={`absolute inline-flex h-2.5 w-2.5 animate-ping-slow rounded-full opacity-60 ${status.dotClassName}`}
+                        />
+                        <span
+                          className={`relative inline-flex h-2 w-2 rounded-full ${status.dotClassName}`}
+                        />
+                      </span>
 
-                      <h2 className="font-display text-xl font-semibold text-foreground">
+                      <h2 className="font-display text-xl font-semibold tracking-[var(--tracking-tight)] text-foreground">
                         {summary.location.name}
                       </h2>
                     </div>
@@ -359,29 +392,23 @@ export default function StandortePage() {
                       {summary.location.city ||
                         "Ort nicht hinterlegt"}
                     </p>
-
-                    {summary.location.address ? (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {summary.location.address}
-                      </p>
-                    ) : null}
                   </div>
 
                   <span
-                    className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${status.className}`}
+                    className={`inline-flex w-fit items-center gap-1.5 rounded-[var(--radius-pill)] border px-3 py-1 text-xs font-semibold ${status.className}`}
                   >
                     {status.label}
                   </span>
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-xl border border-border bg-muted/30 p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="surface rounded-[var(--radius-card)] p-4">
+                    <p className="text-eyebrow text-muted-foreground">
                       Bewertung
                     </p>
 
                     <div className="mt-2 flex items-baseline gap-1">
-                      <span className="font-display text-3xl font-semibold text-foreground">
+                      <span className="font-display text-3xl font-semibold tracking-[var(--tracking-tight)] text-foreground tabular-nums">
                         {summary.feedbackCount > 0
                           ? summary.avgRating
                               .toFixed(1)
@@ -411,12 +438,12 @@ export default function StandortePage() {
                     )}
                   </div>
 
-                  <div className="rounded-xl border border-border bg-muted/30 p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="surface rounded-[var(--radius-card)] p-4">
+                    <p className="text-eyebrow text-muted-foreground">
                       Feedbacks
                     </p>
 
-                    <p className="mt-2 font-display text-3xl font-semibold text-foreground">
+                    <p className="mt-2 font-display text-3xl font-semibold tracking-[var(--tracking-tight)] text-foreground tabular-nums">
                       {summary.feedbackCount}
                     </p>
 
@@ -426,12 +453,12 @@ export default function StandortePage() {
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-border bg-muted/30 p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="surface rounded-[var(--radius-card)] p-4">
+                    <p className="text-eyebrow text-muted-foreground">
                       Offene Aufgaben
                     </p>
 
-                    <p className="mt-2 font-display text-3xl font-semibold text-foreground">
+                    <p className="mt-2 font-display text-3xl font-semibold tracking-[var(--tracking-tight)] text-foreground tabular-nums">
                       {summary.openTasks}
                     </p>
 
@@ -443,8 +470,8 @@ export default function StandortePage() {
                 </div>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-border px-4 py-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
                       <Icon name="feedback" size={17} />
                     </span>
 
@@ -465,8 +492,8 @@ export default function StandortePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-border px-4 py-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
                       <Icon name="tasks" size={17} />
                     </span>
 

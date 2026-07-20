@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/Table";
 import { cn, formatDateTime } from "@/lib/format";
 import { useFilters } from "@/components/providers/FilterProvider";
+import { Icon } from "@/lib/icons";
 import type { Sentiment } from "@/lib/types";
 
 type LocationData = {

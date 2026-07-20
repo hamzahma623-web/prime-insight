@@ -7,7 +7,6 @@ import {
   type ReactNode,
 } from "react";
 import { SectionHeading } from "@/components/ui/Primitives";
-import { Card } from "@/components/ui/Card";
 import { Select } from "@/components/ui/Select";
 import { Icon } from "@/lib/icons";
 import {
@@ -132,14 +131,14 @@ function getGreeting() {
   const hour = new Date().getHours();
 
   if (hour < 12) {
-    return "Guten Morgen Jessica ☀️";
+    return "Guten Morgen Jessica";
   }
 
   if (hour < 18) {
-    return "Guten Tag Jessica 👋";
+    return "Guten Tag Jessica";
   }
 
-  return "Guten Abend Jessica 🌙";
+  return "Guten Abend Jessica";
 }
 
 function getIntroMessage() {
@@ -161,14 +160,24 @@ function getStatusLabel(status: JarvisStatus) {
 
 function getStatusClass(status: JarvisStatus) {
   const classes: Record<JarvisStatus, string> = {
-    good:
-      "border-emerald-500/25 bg-emerald-500/10 text-emerald-600",
+    good: "border-accent/25 bg-accent-soft text-accent",
     attention:
-      "border-amber-500/25 bg-amber-500/10 text-amber-600",
+      "border-warning/25 bg-warning-soft text-warning",
     critical:
-      "border-danger/30 bg-danger/10 text-danger",
+      "border-danger/30 bg-danger-soft text-danger",
     neutral:
       "border-border bg-muted text-muted-foreground",
+  };
+
+  return classes[status];
+}
+
+function getStatusDot(status: JarvisStatus) {
+  const classes: Record<JarvisStatus, string> = {
+    good: "bg-accent",
+    attention: "bg-warning",
+    critical: "bg-danger",
+    neutral: "bg-muted-foreground",
   };
 
   return classes[status];
@@ -188,13 +197,11 @@ function getPriorityLabel(priority: JarvisPriority) {
 function getPriorityClass(priority: JarvisPriority) {
   const classes: Record<JarvisPriority, string> = {
     critical:
-      "border-danger/30 bg-danger/10 text-danger",
-    high:
-      "border-orange-500/30 bg-orange-500/10 text-orange-600",
+      "border-danger/30 bg-danger-soft text-danger",
+    high: "border-warning/30 bg-warning-soft text-warning",
     medium:
-      "border-amber-500/30 bg-amber-500/10 text-amber-600",
-    low:
-      "border-border bg-muted text-muted-foreground",
+      "border-warning/25 bg-warning-soft text-warning",
+    low: "border-border bg-muted text-muted-foreground",
   };
 
   return classes[priority];
@@ -465,8 +472,8 @@ export default function JarvisPage() {
           role: "assistant",
           content:
             createdTasks.length === 1
-              ? `✅ Die Aufgabe ${createdTitles} wurde erstellt und ist jetzt im Bereich „Aufgaben“ sichtbar.`
-              : `✅ Die Aufgaben ${createdTitles} wurden erstellt und sind jetzt im Bereich „Aufgaben“ sichtbar.`,
+              ? `Die Aufgabe ${createdTitles} wurde erstellt und ist jetzt im Bereich „Aufgaben“ sichtbar.`
+              : `Die Aufgaben ${createdTitles} wurden erstellt und sind jetzt im Bereich „Aufgaben“ sichtbar.`,
         };
 
         setMessages((current) => [
@@ -560,12 +567,26 @@ export default function JarvisPage() {
     void sendMessage(input);
   }
 
+  const activeLocationLabel =
+    locationId === "all"
+      ? "Alle Standorte"
+      : locationOptions.find(
+          (option) => option.value === locationId
+        )?.label ?? "Standort";
+
+  const activeTimeLabel =
+    TIME_RANGES.find((range) => range.value === timeRange)
+      ?.label ?? "Zeitraum";
+
+  const showSuggestions =
+    !isThinking && messages.length <= 2;
+
   return (
     <div>
       <SectionHeading
         eyebrow="Assistent der Geschäftsführung"
         title="Jarvis"
-        description="Dein persönlicher Assistent für Feedbacks, Aufgaben und die Entwicklung deines Studios."
+        description="Dein persönlicher Copilot für Feedbacks, Aufgaben und die Entwicklung deines Studios."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Select
@@ -590,43 +611,76 @@ export default function JarvisPage() {
       />
 
       {errorMessage ? (
-        <div className="mb-5 flex items-start justify-between gap-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div className="animate-fade mb-5 flex items-start justify-between gap-4 rounded-[var(--radius-card)] border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
           <span>{errorMessage}</span>
 
           <button
             type="button"
             onClick={() => setErrorMessage("")}
-            className="shrink-0 font-medium hover:opacity-70"
+            className="focus-ring shrink-0 rounded font-medium hover:opacity-70"
           >
             Schließen
           </button>
         </div>
       ) : null}
 
-      <Card className="relative flex h-[calc(100vh-13rem)] min-h-[620px] flex-col overflow-hidden">
-        <div className="border-b border-border bg-muted/20 px-5 py-3">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
-                <Icon name="jarvis" size={18} />
-              </span>
+      <div className="animate-scale-in relative flex h-[calc(100vh-13rem)] min-h-[640px] flex-col overflow-hidden rounded-[var(--radius-surface)] border border-border bg-card shadow-[var(--shadow-card)]">
+        {/* Volumetrischer Hintergrund */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <div className="grid-texture absolute inset-0 opacity-70" />
+          <div
+            className="absolute -left-24 -top-24 h-72 w-72 rounded-full opacity-60 blur-3xl"
+            style={{
+              background:
+                "radial-gradient(circle, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%)",
+            }}
+          />
+          <div
+            className="absolute -right-16 top-1/3 h-64 w-64 rounded-full opacity-40 blur-3xl"
+            style={{
+              background:
+                "radial-gradient(circle, color-mix(in srgb, var(--foreground) 8%, transparent), transparent 70%)",
+            }}
+          />
+        </div>
 
-              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500" />
-            </div>
+        {/* Kopf: AI-Präsenz + Kontext */}
+        <div className="relative flex items-center justify-between gap-4 border-b border-border/70 px-5 py-4 backdrop-blur-sm">
+          <div className="flex items-center gap-3.5">
+            <JarvisCore size={46} active={isThinking} />
 
             <div>
-              <p className="text-sm font-semibold text-foreground">
-                Jarvis
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-display text-sm font-semibold tracking-[var(--tracking-tight)] text-foreground">
+                  Jarvis
+                </p>
 
-              <p className="text-xs text-muted-foreground">
-                Persönlicher Management-Assistent · Live-Daten
+                <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-accent/20 bg-accent-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-accent">
+                  <span className="relative flex h-1.5 w-1.5 items-center justify-center">
+                    <span className="absolute inline-flex h-1.5 w-1.5 animate-ping-slow rounded-full bg-accent/60" />
+                    <span className="relative inline-flex h-1 w-1 rounded-full bg-accent" />
+                  </span>
+                  {isThinking ? "Analysiert" : "Online"}
+                </span>
+              </div>
+
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Interner Management-Copilot · Live-Daten
               </p>
             </div>
           </div>
+
+          <div className="hidden items-center gap-2 sm:flex">
+            <ContextChip icon="location" label={activeLocationLabel} />
+            <ContextChip icon="clock" label={activeTimeLabel} />
+          </div>
         </div>
 
-        <div className="flex-1 space-y-6 overflow-y-auto p-5">
+        {/* Verlauf */}
+        <div className="relative flex-1 space-y-6 overflow-y-auto px-4 py-6 sm:px-6">
           {messages.map((message) =>
             message.role === "user" ? (
               <UserMessage
@@ -646,7 +700,8 @@ export default function JarvisPage() {
           <div ref={endRef} />
         </div>
 
-        {!isThinking && messages.length <= 2 ? (
+        {/* Vorschläge */}
+        {showSuggestions ? (
           <SuggestionArea
             onSelect={(suggestion) =>
               void sendMessage(suggestion)
@@ -654,8 +709,13 @@ export default function JarvisPage() {
           />
         ) : null}
 
-        <div className="border-t border-border bg-card p-4">
-          <div className="flex items-end gap-2 rounded-2xl border border-border bg-background px-3 py-2 shadow-sm transition-all focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-ring">
+        {/* Eingabe */}
+        <div className="relative border-t border-border/70 bg-card/60 p-4 backdrop-blur-md">
+          <div className="group flex items-end gap-2 rounded-[var(--radius-card)] border border-border bg-background px-3 py-2 transition-all duration-200 focus-within:border-accent/50 focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--accent)_14%,transparent)]">
+            <span className="flex h-10 w-8 items-center justify-center text-accent">
+              <Icon name="sparkle" size={16} />
+            </span>
+
             <input
               ref={inputRef}
               value={input}
@@ -674,8 +734,8 @@ export default function JarvisPage() {
               disabled={isThinking}
               placeholder={
                 isThinking
-                  ? "Jarvis sieht sich die Daten an ..."
-                  : "Was möchtest du wissen?"
+                  ? "Jarvis sieht sich die Daten an …"
+                  : "Frag Jarvis etwas zu deinem Studio …"
               }
               className="h-10 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
             />
@@ -685,19 +745,109 @@ export default function JarvisPage() {
               onClick={handleSubmit}
               disabled={!input.trim() || isThinking}
               aria-label="Nachricht senden"
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-all duration-200 hover:scale-105 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+              className="focus-ring interactive inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-foreground text-background shadow-[var(--shadow-flat)] hover:shadow-[var(--shadow-raised)] disabled:pointer-events-none disabled:opacity-40 dark:bg-white dark:text-[#0a0b0d]"
             >
               <Icon name="send" size={16} />
             </button>
           </div>
 
-          <p className="mt-2 text-center text-[11px] text-muted-foreground">
+          <p className="mt-2.5 text-center text-[11px] text-muted-foreground">
             Jarvis berücksichtigt ausschließlich deine
             freigegebenen Standortdaten.
           </p>
         </div>
-      </Card>
+      </div>
     </div>
+  );
+}
+
+/* --- Animierter AI-Core (reines CSS/SVG, keine Dependency) --- */
+function JarvisCore({
+  size = 46,
+  active = false,
+}: {
+  size?: number;
+  active?: boolean;
+}) {
+  return (
+    <span
+      className="relative inline-flex shrink-0 items-center justify-center"
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+    >
+      {/* weiches Glühen */}
+      <span
+        className={active ? "animate-breathe absolute inset-0" : "absolute inset-0"}
+        style={{
+          borderRadius: "9999px",
+          background:
+            "radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 62%)",
+          filter: "blur(7px)",
+          opacity: active ? 0.95 : 0.65,
+        }}
+      />
+
+      {/* äußerer rotierender Lichtbogen */}
+      <span
+        className="animate-spin-slow absolute inset-0"
+        style={{
+          borderRadius: "9999px",
+          background:
+            "conic-gradient(from 90deg, transparent, var(--accent), transparent 55%)",
+          WebkitMaskImage:
+            "radial-gradient(circle, transparent 58%, #000 60%)",
+          maskImage:
+            "radial-gradient(circle, transparent 58%, #000 60%)",
+          opacity: 0.8,
+        }}
+      />
+
+      {/* gegenläufiger, feiner Bogen */}
+      <span
+        className="animate-spin-slow absolute inset-[3px]"
+        style={{
+          borderRadius: "9999px",
+          background:
+            "conic-gradient(from 270deg, transparent, color-mix(in srgb, var(--foreground) 30%, transparent), transparent 40%)",
+          WebkitMaskImage:
+            "radial-gradient(circle, transparent 60%, #000 62%)",
+          maskImage:
+            "radial-gradient(circle, transparent 60%, #000 62%)",
+          animationDirection: "reverse",
+          animationDuration: "9s",
+          opacity: 0.6,
+        }}
+      />
+
+      {/* Orbit-Partikel */}
+      <span
+        className="orbit"
+        style={{ animationDuration: active ? "4.5s" : "7s" }}
+      />
+
+      {/* Kern */}
+      <span
+        className="relative flex items-center justify-center rounded-full border border-border bg-card text-accent shadow-[var(--shadow-flat)]"
+        style={{ width: size * 0.62, height: size * 0.62 }}
+      >
+        <Icon name="jarvis" size={Math.round(size * 0.36)} />
+      </span>
+    </span>
+  );
+}
+
+function ContextChip({
+  icon,
+  label,
+}: {
+  icon: "location" | "clock";
+  label: string;
+}) {
+  return (
+    <span className="inline-flex max-w-[190px] items-center gap-1.5 rounded-[var(--radius-pill)] border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm">
+      <Icon name={icon} size={13} className="shrink-0" />
+      <span className="truncate">{label}</span>
+    </span>
   );
 }
 
@@ -707,8 +857,8 @@ function UserMessage({
   content: string;
 }) {
   return (
-    <div className="flex animate-[fadeIn_250ms_ease-out] justify-end">
-      <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-4 py-3 text-sm leading-6 text-primary-foreground shadow-sm md:max-w-[70%]">
+    <div className="animate-rise flex justify-end">
+      <div className="max-w-[85%] rounded-[var(--radius-card)] rounded-br-md bg-foreground px-4 py-3 text-sm leading-6 text-background shadow-[var(--shadow-flat)] md:max-w-[70%] dark:bg-white dark:text-[#0a0b0d]">
         {content}
       </div>
     </div>
@@ -721,16 +871,14 @@ function AssistantMessage({
   message: ChatMessage;
 }) {
   return (
-    <div className="flex animate-[fadeIn_300ms_ease-out] gap-3">
-      <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
-        <Icon name="jarvis" size={17} />
-      </span>
+    <div className="animate-rise flex gap-3.5">
+      <JarvisCore size={38} />
 
       <div className="min-w-0 max-w-4xl flex-1">
         {message.answer ? (
           <JarvisAnswerBlock answer={message.answer} />
         ) : (
-          <div className="rounded-2xl rounded-tl-sm border border-border bg-muted/40 p-5 shadow-sm">
+          <div className="ai-card rounded-tl-md p-5">
             <p className="whitespace-pre-line text-sm leading-7 text-foreground">
               {message.content}
             </p>
@@ -747,8 +895,8 @@ function SuggestionArea({
   onSelect: (suggestion: string) => void;
 }) {
   return (
-    <div className="border-t border-border bg-muted/10 px-5 py-4">
-      <p className="mb-3 text-xs font-semibold text-foreground">
+    <div className="relative border-t border-border/70 bg-muted/20 px-5 py-4 backdrop-blur-sm">
+      <p className="text-eyebrow mb-3 text-muted-foreground/70">
         Womit soll ich starten?
       </p>
 
@@ -758,8 +906,13 @@ function SuggestionArea({
             key={suggestion}
             type="button"
             onClick={() => onSelect(suggestion)}
-            className="rounded-full border border-border bg-card px-3.5 py-2 text-xs font-medium text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-accent hover:text-accent hover:shadow-sm"
+            className="focus-ring interactive group inline-flex items-center gap-2 rounded-[var(--radius-pill)] border border-border bg-card px-3.5 py-2 text-xs font-medium text-foreground hover:border-accent/40 hover:text-accent"
           >
+            <Icon
+              name="sparkle"
+              size={13}
+              className="text-muted-foreground transition-colors group-hover:text-accent"
+            />
             {suggestion}
           </button>
         ))}
@@ -770,17 +923,17 @@ function SuggestionArea({
 
 function ThinkingIndicator() {
   return (
-    <div className="flex gap-3">
-      <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 animate-pulse items-center justify-center rounded-xl bg-accent-soft text-accent">
-        <Icon name="jarvis" size={17} />
-      </span>
+    <div className="animate-fade flex gap-3.5">
+      <JarvisCore size={38} active />
 
-      <div className="rounded-2xl rounded-tl-sm border border-border bg-muted/40 px-4 py-3 shadow-sm">
-        <div className="flex items-center gap-3">
+      <div className="ai-card relative overflow-hidden rounded-tl-md px-4 py-3.5">
+        <span className="scanline" aria-hidden="true" />
+
+        <div className="relative flex items-center gap-3">
           <div className="flex items-center gap-1">
-            <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.3s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.15s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-accent" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent [animation-delay:-0.3s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent [animation-delay:-0.15s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent" />
           </div>
 
           <p className="text-sm text-muted-foreground">
@@ -802,28 +955,29 @@ function JarvisAnswerBlock({
     answer.risks.length > 0;
 
   return (
-    <div className="overflow-hidden rounded-2xl rounded-tl-sm border border-border bg-card shadow-sm">
-      <div className="border-b border-border bg-muted/30 px-5 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Jarvis Briefing
-          </p>
+    <div className="ai-card overflow-hidden rounded-tl-md">
+      {/* Kopf */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-5 py-4">
+        <p className="text-eyebrow text-muted-foreground">
+          Jarvis Briefing
+        </p>
 
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border px-2.5 py-1 text-[11px] font-semibold ${getStatusClass(
+            answer.status
+          )}`}
+        >
           <span
-            className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClass(
+            className={`h-1.5 w-1.5 rounded-full ${getStatusDot(
               answer.status
             )}`}
-          >
-            {getStatusLabel(answer.status)}
-          </span>
-        </div>
+          />
+          {getStatusLabel(answer.status)}
+        </span>
       </div>
 
       <div className="space-y-6 p-5">
-        <BriefingSection
-          icon="💬"
-          title="Kurz gesagt"
-        >
+        <BriefingSection title="Kurz gesagt" icon="sparkle">
           {answer.message ? (
             <p className="text-sm leading-6 text-muted-foreground">
               {answer.message}
@@ -834,8 +988,8 @@ function JarvisAnswerBlock({
             <p
               className={
                 answer.message
-                  ? "mt-2 text-lg font-semibold leading-7 text-foreground"
-                  : "text-lg font-semibold leading-7 text-foreground"
+                  ? "mt-2 font-display text-lg font-semibold leading-7 tracking-[var(--tracking-tight)] text-foreground"
+                  : "font-display text-lg font-semibold leading-7 tracking-[var(--tracking-tight)] text-foreground"
               }
             >
               {answer.summary}
@@ -845,8 +999,8 @@ function JarvisAnswerBlock({
 
         {hasObservations ? (
           <BriefingSection
-            icon="👀"
             title="Mir ist etwas aufgefallen"
+            icon="search"
           >
             <div className="space-y-2">
               {answer.keyFacts.map((fact) => (
@@ -869,8 +1023,8 @@ function JarvisAnswerBlock({
 
         {answer.recommendations.length > 0 ? (
           <BriefingSection
-            icon="🎯"
             title="Das würde ich heute tun"
+            icon="trend"
           >
             <div className="space-y-3">
               {answer.recommendations.map(
@@ -888,8 +1042,8 @@ function JarvisAnswerBlock({
 
         {answer.taskDrafts.length > 0 ? (
           <BriefingSection
-            icon="✅"
             title="Passende Aufgaben"
+            icon="check"
           >
             <div className="space-y-3">
               {answer.taskDrafts.map(
@@ -905,7 +1059,8 @@ function JarvisAnswerBlock({
         ) : null}
       </div>
 
-      <div className="flex items-center gap-1.5 border-t border-border bg-muted/20 px-5 py-3 text-xs text-muted-foreground">
+      {/* Fuß */}
+      <div className="flex items-center gap-1.5 border-t border-border/70 bg-muted/20 px-5 py-3 text-xs text-muted-foreground">
         <Icon name="reports" size={13} />
         Basierend auf aktuellen Feedbacks und Aufgaben
       </div>
@@ -918,14 +1073,16 @@ function BriefingSection({
   title,
   children,
 }: {
-  icon: string;
+  icon: "sparkle" | "search" | "trend" | "check";
   title: string;
   children: ReactNode;
 }) {
   return (
     <section>
       <div className="mb-3 flex items-center gap-2">
-        <span aria-hidden="true">{icon}</span>
+        <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground">
+          <Icon name={icon} size={13} />
+        </span>
 
         <h3 className="text-sm font-semibold text-foreground">
           {title}
@@ -948,15 +1105,15 @@ function BriefingPoint({
     <div
       className={
         variant === "attention"
-          ? "flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2.5"
-          : "flex items-start gap-3 rounded-xl border border-border bg-muted/20 px-3 py-2.5"
+          ? "flex items-start gap-3 rounded-[var(--radius-control)] border border-warning/20 bg-warning-soft/50 px-3.5 py-2.5"
+          : "flex items-start gap-3 rounded-[var(--radius-control)] border border-border bg-muted/25 px-3.5 py-2.5"
       }
     >
       <span
         className={
           variant === "attention"
-            ? "mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"
-            : "mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+            ? "mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-warning"
+            : "mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
         }
       />
 
@@ -975,9 +1132,9 @@ function RecommendationItem({
   index: number;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-muted/20 p-3">
+    <div className="interactive rounded-[var(--radius-control)] border border-border bg-muted/25 p-3.5">
       <div className="flex items-start gap-3">
-        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
+        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent-soft text-xs font-semibold text-accent">
           {index + 1}
         </span>
 
@@ -1009,7 +1166,7 @@ function TaskDraftItem({
   task: JarvisTaskDraft;
 }) {
   return (
-    <div className="rounded-xl border border-accent/20 bg-accent-soft/30 p-3">
+    <div className="rounded-[var(--radius-control)] border border-accent/20 bg-accent-soft/40 p-3.5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-foreground">
@@ -1042,7 +1199,7 @@ function PriorityBadge({
 }) {
   return (
     <span
-      className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getPriorityClass(
+      className={`inline-flex shrink-0 items-center rounded-[var(--radius-pill)] border px-2.5 py-1 text-[11px] font-semibold ${getPriorityClass(
         priority
       )}`}
     >

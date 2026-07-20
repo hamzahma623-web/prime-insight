@@ -43,16 +43,15 @@ function Switch({
       aria-label={label}
       onClick={onChange}
       className={cn(
-        "relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-all duration-300",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "focus-ring relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors duration-300",
         checked
-          ? "border-accent bg-accent shadow-sm"
+          ? "border-accent bg-accent"
           : "border-border bg-muted"
       )}
     >
       <span
         className={cn(
-          "inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-300",
+          "inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-300 ease-out",
           checked ? "translate-x-6" : "translate-x-1"
         )}
       />
@@ -175,7 +174,7 @@ export default function EinstellungenPage() {
                 <Icon
                   name={theme === "dark" ? "moon" : "sun"}
                   size={17}
-                  className="text-muted-foreground transition-transform duration-300"
+                  className="text-muted-foreground"
                 />
 
                 <Switch
@@ -190,7 +189,7 @@ export default function EinstellungenPage() {
               title="Sprache"
               description="Aktuell verwendete Oberflächensprache."
             >
-              <span className="rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs font-semibold text-foreground">
+              <span className="rounded-[var(--radius-pill)] border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-foreground">
                 Deutsch
               </span>
             </SettingRow>
@@ -214,15 +213,15 @@ export default function EinstellungenPage() {
 
           <CardBody>
             {locationError ? (
-              <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+              <div className="rounded-[var(--radius-card)] border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
                 {locationError}
               </div>
             ) : (
               <>
-                <div className="rounded-2xl border border-border bg-muted/20 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
+                <div className="surface interactive rounded-[var(--radius-card)] p-5">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-background text-accent shadow-sm">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] border border-accent/20 bg-accent-soft text-accent">
                         <Icon name="location" size={20} />
                       </span>
 
@@ -238,25 +237,40 @@ export default function EinstellungenPage() {
                     </div>
 
                     <span className="font-display text-3xl font-semibold tabular-nums text-foreground">
-                      {isLoadingLocations ? "–" : activeLocations.length}
+                      {isLoadingLocations ? (
+                        <span className="skeleton inline-block h-8 w-8 align-middle" />
+                      ) : (
+                        activeLocations.length
+                      )}
                     </span>
                   </div>
                 </div>
 
                 <div className="mt-4 space-y-2">
                   {isLoadingLocations ? (
-                    <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-                      Standorte werden geladen …
-                    </div>
+                    <>
+                      {[0, 1].map((i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between rounded-[var(--radius-card)] border border-border px-4 py-3"
+                        >
+                          <div className="space-y-2">
+                            <span className="skeleton block h-4 w-32" />
+                            <span className="skeleton block h-3 w-20" />
+                          </div>
+                          <span className="skeleton h-2.5 w-2.5 rounded-full" />
+                        </div>
+                      ))}
+                    </>
                   ) : activeLocations.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+                    <div className="surface rounded-[var(--radius-card)] px-4 py-6 text-center text-sm text-muted-foreground">
                       Keine aktiven Standorte gefunden.
                     </div>
                   ) : (
                     activeLocations.slice(0, 3).map((location) => (
                       <div
                         key={location.id}
-                        className="flex items-center justify-between rounded-xl border border-border px-4 py-3 transition-colors hover:bg-muted/30"
+                        className="flex items-center justify-between rounded-[var(--radius-card)] border border-border px-4 py-3 transition-colors hover:bg-muted/40"
                       >
                         <div>
                           <p className="text-sm font-semibold text-foreground">
@@ -268,7 +282,10 @@ export default function EinstellungenPage() {
                           </p>
                         </div>
 
-                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-sm" />
+                        <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+                          <span className="absolute inline-flex h-2.5 w-2.5 animate-ping-slow rounded-full bg-accent/50" />
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+                        </span>
                       </div>
                     ))
                   )}
@@ -276,10 +293,10 @@ export default function EinstellungenPage() {
 
                 <Link
                   href="/standorte"
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent transition-all hover:gap-3"
+                  className="focus-ring mt-4 inline-flex items-center gap-1.5 rounded text-sm font-semibold text-accent transition-all hover:gap-2.5"
                 >
                   Standortübersicht öffnen
-                  <span aria-hidden="true">→</span>
+                  <Icon name="chevronRight" size={14} />
                 </Link>
               </>
             )}
@@ -315,7 +332,7 @@ export default function EinstellungenPage() {
               title="Version"
               description="Aktueller Produktstand."
             >
-              <span className="rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs font-semibold text-foreground">
+              <span className="rounded-[var(--radius-pill)] border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-foreground">
                 Version 1.0
               </span>
             </SettingRow>
@@ -329,7 +346,7 @@ export default function EinstellungenPage() {
           />
 
           <CardBody>
-            <div className="rounded-2xl border border-border bg-muted/20 p-5">
+            <div className="surface rounded-[var(--radius-card)] p-5">
               <p className="text-sm font-semibold text-foreground">
                 Aktive Sitzung
               </p>
