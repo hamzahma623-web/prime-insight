@@ -11,12 +11,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "relative rounded-[var(--radius-card)]",
-        "border border-border",
-        "bg-card text-card-foreground",
-        "shadow-[var(--shadow-flat)]",
-        "transition-[border-color,box-shadow] duration-200 ease-out",
-        "hover:border-foreground/15 hover:shadow-[var(--shadow-raised)]",
+        "card card-hover relative text-card-foreground",
         className
       )}
     >

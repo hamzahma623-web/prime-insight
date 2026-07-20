@@ -12,8 +12,8 @@ export default function TrainerPage() {
     locationId === "all"
       ? "Alle Standorte"
       : locationOptions.find(
-  (location) => location.value === locationId
-)?.label ?? "Ausgewählter Standort";
+          (location) => location.value === locationId
+        )?.label ?? "Ausgewählter Standort";
 
   return (
     <div>
@@ -23,66 +23,76 @@ export default function TrainerPage() {
         description={`${selectedLocation} · Hier werden später alle Trainer übersichtlich dargestellt.`}
       />
 
-      <Card className="p-8">
+      <Card className="overflow-hidden p-8 sm:p-10">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-            <Icon name="trainer" size={24} />
+          {/* Ruhiger AI-/Team-Kern statt flacher Kachel */}
+          <span className="relative mx-auto flex h-16 w-16 items-center justify-center">
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 rounded-full opacity-60 blur-2xl"
+              style={{
+                background:
+                  "radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%)",
+              }}
+            />
+            <span className="surface relative flex h-14 w-14 items-center justify-center rounded-[var(--radius-card)] text-muted-foreground">
+              <Icon name="trainer" size={24} />
+            </span>
           </span>
 
-          <h2 className="mt-5 font-display text-xl font-semibold text-foreground">
+          <h2 className="mt-6 font-display text-xl font-semibold tracking-[var(--tracking-tight)] text-foreground">
             Noch keine Trainer angelegt
           </h2>
 
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          <p className="mt-2.5 text-sm leading-6 text-muted-foreground">
             Sobald die Trainerdaten vollständig vorliegen, werden hier Namen,
             Standorte, Bewertungen und Zuständigkeiten angezeigt.
           </p>
 
-          <div className="mt-7 grid gap-3 text-left sm:grid-cols-3">
-            <div className="rounded-xl border border-border bg-muted/20 p-4">
-              <p className="text-sm font-semibold text-foreground">
-                Trainerprofile
-              </p>
-
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Name, Standort und Zuständigkeit auf einen Blick.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-border bg-muted/20 p-4">
-              <p className="text-sm font-semibold text-foreground">
-                Bewertungen
-              </p>
-
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Rückmeldungen werden später verständlich je Trainer
-                zusammengefasst.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-border bg-muted/20 p-4">
-              <p className="text-sm font-semibold text-foreground">
-                Entwicklung
-              </p>
-
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Positive Entwicklungen und Handlungsbedarf werden klar
-                dargestellt.
-              </p>
-            </div>
+          <div className="mt-8 grid gap-3 text-left sm:grid-cols-3">
+            {[
+              {
+                icon: "trainer" as const,
+                title: "Trainerprofile",
+                text: "Name, Standort und Zuständigkeit auf einen Blick.",
+              },
+              {
+                icon: "star" as const,
+                title: "Bewertungen",
+                text: "Rückmeldungen werden später verständlich je Trainer zusammengefasst.",
+              },
+              {
+                icon: "trend" as const,
+                title: "Entwicklung",
+                text: "Positive Entwicklungen und Handlungsbedarf werden klar dargestellt.",
+              },
+            ].map((feature) => (
+              <div
+                key={feature.title}
+                className="surface interactive rounded-[var(--radius-card)] p-4"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
+                  <Icon name={feature.icon} size={16} />
+                </span>
+                <p className="mt-3 text-sm font-semibold text-foreground">
+                  {feature.title}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  {feature.text}
+                </p>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-7 rounded-xl border border-border bg-muted/20 px-5 py-4 text-left">
+          <div className="surface mt-6 rounded-[var(--radius-card)] px-5 py-4 text-left">
             <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Icon name="trainer" size={16} />
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-accent/20 bg-accent-soft text-accent">
+                <Icon name="sparkle" size={15} />
               </span>
-
               <div>
                 <p className="text-sm font-semibold text-foreground">
                   Für die Präsentation vorbereitet
                 </p>
-
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   Es werden bewusst keine Beispielnamen oder erfundenen
                   Leistungsdaten angezeigt.

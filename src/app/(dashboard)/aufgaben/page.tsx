@@ -300,13 +300,14 @@ export default function AufgabenPage() {
       />
 
       {successMessage ? (
-        <div className="mb-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600">
+        <div className="animate-fade mb-4 flex items-center gap-2.5 rounded-[var(--radius-card)] border border-accent/25 bg-accent-soft px-4 py-3 text-sm text-accent">
+          <Icon name="check" size={16} className="shrink-0" />
           {successMessage}
         </div>
       ) : null}
 
       {errorMessage ? (
-        <div className="mb-4 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div className="animate-fade mb-4 rounded-[var(--radius-card)] border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
           {errorMessage}
         </div>
       ) : null}
@@ -314,28 +315,31 @@ export default function AufgabenPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <KpiCard
           label="Noch zu erledigen"
-          value={isLoading ? "..." : String(openCount)}
+          value={String(openCount)}
           icon="tasks"
+          loading={isLoading}
         />
 
         <KpiCard
           label="Dringend"
-          value={isLoading ? "..." : String(criticalCount)}
+          value={String(criticalCount)}
           icon="alert"
           tone="danger"
+          loading={isLoading}
         />
 
         <KpiCard
           label="Überfällig"
-          value={isLoading ? "..." : String(overdueCount)}
+          value={String(overdueCount)}
           icon="clock"
           tone={overdueCount > 0 ? "danger" : "neutral"}
+          loading={isLoading}
         />
       </div>
 
-      <div className="mt-6 flex items-center justify-between gap-4">
+      <div className="mt-8 flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="font-display text-lg font-semibold tracking-[var(--tracking-tight)] text-foreground">
             Aktuelle Aufgaben
           </h2>
 
@@ -347,7 +351,7 @@ export default function AufgabenPage() {
         <button
           type="button"
           onClick={() => setShowCompleted((current) => !current)}
-          className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          className="focus-ring interactive shrink-0 rounded-[var(--radius-control)] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
           {showCompleted
             ? "Erledigte ausblenden"
@@ -357,7 +361,7 @@ export default function AufgabenPage() {
 
       <div
         className={cn(
-          "mt-4 grid gap-4",
+          "mt-5 grid gap-5",
           showCompleted ? "lg:grid-cols-3" : "lg:grid-cols-2"
         )}
       >
@@ -368,26 +372,37 @@ export default function AufgabenPage() {
                 {column.label}
               </span>
 
-              <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                {isLoading
-                  ? "..."
-                  : byStatus[column.status].length}
+              <span className="rounded-[var(--radius-pill)] border border-border bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+                {isLoading ? "–" : byStatus[column.status].length}
               </span>
             </div>
 
             <div className="space-y-3">
               {isLoading ? (
-                <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-                  Aufgaben werden geladen ...
-                </div>
+                <Card className="p-4">
+                  <div className="space-y-3">
+                    <span className="skeleton block h-5 w-20 rounded-full" />
+                    <span className="skeleton block h-4 w-3/4" />
+                    <span className="skeleton block h-3 w-1/2" />
+                    <span className="skeleton block h-9 w-full rounded-[var(--radius-control)]" />
+                  </div>
+                </Card>
               ) : byStatus[column.status].length === 0 ? (
-                <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-                  {column.status === "done"
-                    ? "Noch keine erledigten Aufgaben"
-                    : "Hier ist aktuell nichts zu tun"}
+                <div className="surface flex flex-col items-center rounded-[var(--radius-card)] px-4 py-10 text-center">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
+                    <Icon
+                      name={column.status === "done" ? "check" : "tasks"}
+                      size={20}
+                    />
+                  </span>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {column.status === "done"
+                      ? "Noch keine erledigten Aufgaben"
+                      : "Hier ist aktuell nichts zu tun"}
+                  </p>
                 </div>
               ) : (
-                byStatus[column.status].map((task) => {
+                byStatus[column.status].map((task, index) => {
                   const isBusy =
                     updatingId === task.id ||
                     deletingId === task.id;
@@ -395,7 +410,7 @@ export default function AufgabenPage() {
                   const isOverdue =
                     task.status !== "done" &&
                     Boolean(task.due_at) &&
-                    new Date(task.due_at as string).getTime() <
+                    new Date(task.due_at as string).getTime() 
                       Date.now();
 
                   const locationLabel = task.locations
@@ -405,7 +420,12 @@ export default function AufgabenPage() {
                     : "Unbekannter Standort";
 
                   return (
-                    <Card key={task.id} className="p-4">
+                    <Card
+                      key={task.id}
+                      className="animate-rise p-4"
+                      // @ts-expect-error – inline style for stagger
+                      style={{ animationDelay: `${index * 45}ms` }}
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <PriorityBadge priority={task.priority} />
 
@@ -416,7 +436,7 @@ export default function AufgabenPage() {
 
                       <p
                         className={cn(
-                          "mt-2.5 text-sm font-medium text-foreground",
+                          "mt-2.5 text-sm font-semibold text-foreground",
                           task.status === "done" &&
                             "text-muted-foreground line-through"
                         )}
@@ -479,10 +499,10 @@ export default function AufgabenPage() {
                                 "in_progress"
                               )
                             }
-                            className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="focus-ring interactive rounded-[var(--radius-control)] bg-foreground px-3 py-2 text-xs font-medium text-background hover:opacity-90 disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-[#0a0b0d]"
                           >
                             {updatingId === task.id
-                              ? "Wird aktualisiert ..."
+                              ? "Wird aktualisiert …"
                               : "Starten"}
                           </button>
                         ) : null}
@@ -497,7 +517,7 @@ export default function AufgabenPage() {
                                 "done"
                               )
                             }
-                            className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-600 transition-colors hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="focus-ring rounded-[var(--radius-control)] border border-accent/30 bg-accent-soft px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/15 disabled:pointer-events-none disabled:opacity-50"
                           >
                             Als erledigt markieren
                           </button>
@@ -511,7 +531,7 @@ export default function AufgabenPage() {
                                 "open"
                               )
                             }
-                            className="rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                            className="focus-ring rounded-[var(--radius-control)] border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
                           >
                             Wieder öffnen
                           </button>
@@ -523,10 +543,10 @@ export default function AufgabenPage() {
                           onClick={() =>
                             void handleDeleteTask(task)
                           }
-                          className="ml-auto rounded-lg border border-red-500/30 px-3 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="focus-ring ml-auto rounded-[var(--radius-control)] border border-danger/30 px-3 py-2 text-xs font-medium text-danger transition-colors hover:bg-danger-soft disabled:pointer-events-none disabled:opacity-50"
                         >
                           {deletingId === task.id
-                            ? "Wird gelöscht ..."
+                            ? "Wird gelöscht …"
                             : "Löschen"}
                         </button>
                       </div>

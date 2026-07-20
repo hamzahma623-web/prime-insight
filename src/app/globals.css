@@ -3,14 +3,15 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f6f7f9;
-  --foreground: #0c1220;
+  /* --- Basis: hell (ruhig, neutral) --- */
+  --background: #f7f8fa;
+  --foreground: #0b0d12;
   --card: #ffffff;
-  --card-foreground: #0c1220;
-  --muted: #eef0f4;
-  --muted-foreground: #5a6473;
-  --border: #e4e7ec;
-  --primary: #111827;
+  --card-foreground: #0b0d12;
+  --muted: #f1f2f5;
+  --muted-foreground: #616773;
+  --border: #e6e8ec;
+  --primary: #0b0d12;
   --primary-foreground: #ffffff;
   --accent: #0fa378;
   --accent-foreground: #052a20;
@@ -26,57 +27,94 @@
   --info-soft: #dee7fe;
   --ring: #0fa378;
 
-  /* --- Design-System: Radien (3 Stufen + Pill) --- */
-  --radius-control: 0.75rem; /* 12px – Buttons, Selects, Inputs, kleine Tiles */
-  --radius-card: 1rem;       /* 16px – Standard-Karten */
-  --radius-surface: 1.25rem; /* 20px – große Flächen / Hero / Sheets */
+  /* --- Oberflächen-Ebenen --- */
+  --elevated: #ffffff;
+  --hairline: rgba(255, 255, 255, 0.9);
+
+  /* --- Radien --- */
+  --radius-control: 0.625rem; /* 10px */
+  --radius-card: 1.125rem;    /* 18px */
+  --radius-surface: 1.5rem;   /* 24px */
   --radius-pill: 9999px;
 
-  /* --- Design-System: Elevation (3 Stufen, hell) --- */
+  /* --- Elevation --- */
   --shadow-flat: 0 1px 2px rgba(16, 24, 40, 0.03);
   --shadow-raised: 0 1px 2px rgba(16, 24, 40, 0.04),
     0 10px 28px -14px rgba(16, 24, 40, 0.14);
-  --shadow-overlay: 0 16px 40px -12px rgba(16, 24, 40, 0.22);
+  --shadow-overlay: 0 24px 64px -20px rgba(16, 24, 40, 0.28);
+  --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 14px 34px -22px rgba(16, 24, 40, 0.14);
+  --shadow-pop: inset 0 1px 0 0 rgba(255, 255, 255, 1),
+    0 2px 6px rgba(16, 24, 40, 0.07),
+    0 26px 56px -26px rgba(16, 24, 40, 0.2);
 
-  /* --- Design-System: Motion --- */
+  /* --- Motion --- */
   --ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* --- Design-System: Typografie-Tracking --- */
+  /* --- Typografie-Tracking --- */
   --tracking-display: -0.035em;
   --tracking-tight: -0.02em;
   --tracking-label: 0.14em;
+
+  /* --- Ambientes Hintergrundlicht (sehr dezent) --- */
+  --ambient: radial-gradient(
+    48rem 38rem at 8% -12%,
+    rgba(15, 163, 120, 0.05),
+    transparent 60%
+  );
 }
 
 .dark {
-  --background: #0a0e14;
-  --foreground: #e6eaf1;
-  --card: #111722;
-  --card-foreground: #e6eaf1;
-  --muted: #1a2230;
-  --muted-foreground: #8c96a8;
-  --border: #232c3b;
-  --primary: #e6eaf1;
-  --primary-foreground: #0a0e14;
-  --accent: #2cd4a6;
-  --accent-foreground: #052a20;
-  --accent-soft: #0e2e28;
-  --success: #34d399;
+  /* --- Basis: dunkel (tiefes, neutrales Schwarz / Anthrazit) --- */
+  --background: #0a0b0d;
+  --foreground: #f2f3f5;
+  --card: #131418;
+  --card-foreground: #f2f3f5;
+  --muted: #1b1d22;
+  --muted-foreground: #9a9fa9;
+  --border: #26282f;
+  --primary: #f2f3f5;
+  --primary-foreground: #0a0b0d;
+  --accent: #2fd6a6;
+  --accent-foreground: #04140f;
+  --accent-soft: #0f2a23;
+  --success: #34d39a;
   --success-foreground: #04231a;
-  --success-soft: #10281e;
-  --warning: #fbbf24;
-  --warning-soft: #2a2110;
-  --danger: #f87171;
-  --danger-soft: #2a1414;
-  --info: #60a5fa;
-  --info-soft: #111e33;
-  --ring: #2cd4a6;
+  --success-soft: #102820;
+  --warning: #f5b544;
+  --warning-soft: #2a2010;
+  --danger: #f26d6d;
+  --danger-soft: #2a1616;
+  --info: #5aa2f5;
+  --info-soft: #0f1d33;
+  --ring: #2fd6a6;
 
-  /* --- Elevation (3 Stufen, dunkel) --- */
-  --shadow-flat: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --elevated: #191b20;
+  --hairline: rgba(255, 255, 255, 0.05);
+
+  --shadow-flat: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4),
     0 14px 34px -16px rgba(0, 0, 0, 0.6);
-  --shadow-overlay: 0 20px 48px -12px rgba(0, 0, 0, 0.7);
+  --shadow-overlay: 0 30px 80px -24px rgba(0, 0, 0, 0.85);
+  --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 16px 40px -24px rgba(0, 0, 0, 0.8);
+  --shadow-pop: inset 0 1px 0 0 rgba(255, 255, 255, 0.07),
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    0 30px 70px -28px rgba(0, 0, 0, 0.9);
+
+  --ambient: radial-gradient(
+      55rem 45rem at 8% -12%,
+      rgba(47, 214, 166, 0.09),
+      transparent 60%
+    ),
+    radial-gradient(
+      45rem 35rem at 100% -8%,
+      rgba(255, 255, 255, 0.035),
+      transparent 55%
+    );
 }
 
 @theme inline {
@@ -92,6 +130,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-soft: var(--accent-soft);
+  --color-elevated: var(--elevated);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-success-soft: var(--success-soft);
@@ -119,12 +158,23 @@ html.dark {
 }
 
 body {
+  position: relative;
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Ambientes, fixiertes Hintergrundlicht – räumliche Tiefe, sehr dezent */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--ambient);
 }
 
 ::selection {
@@ -136,8 +186,57 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--muted-foreground) 30%, transparent);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--muted-foreground) 50%, transparent);
+}
 
-/* --- Design-System: einheitlicher Fokus-Zustand --- */
+/* --- Oberflächen-System --- */
+.surface,
+.card {
+  background-color: var(--card);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, #ffffff 4%, var(--card)),
+    var(--card)
+  );
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.card {
+  transition: transform 0.3s var(--ease-out-quart),
+    border-color 0.3s ease, box-shadow 0.3s var(--ease-out-quart);
+}
+
+.card-hover:hover {
+  border-color: color-mix(in srgb, var(--foreground) 16%, var(--border));
+  box-shadow: var(--shadow-pop);
+}
+
+/* Hebt ein Element bei Hover leicht an (Tiefenbewegung) */
+.interactive {
+  transition: transform 0.3s var(--ease-out-quart),
+    border-color 0.3s ease, box-shadow 0.3s var(--ease-out-quart);
+}
+.interactive:hover {
+  transform: translateY(-2px);
+}
+.interactive:active {
+  transform: translateY(0);
+}
+
+/* --- Fokus-Zustand (modern, ruhig) --- */
 .focus-ring {
   outline: none;
 }
@@ -146,7 +245,7 @@ body {
   outline-offset: 2px;
 }
 
-/* --- Design-System: Typo-Baustein für Eyebrows/Labels --- */
+/* --- Eyebrow / Labels --- */
 .text-eyebrow {
   font-size: 0.6875rem;
   line-height: 1rem;
@@ -155,18 +254,71 @@ body {
   text-transform: uppercase;
 }
 
-/* --- Design-System: dezente, funktionale Entrance-Animationen --- */
+/* --- Display-Text mit sehr subtilem Verlauf (nur große Headlines) --- */
+.text-gradient {
+  background: linear-gradient(
+    180deg,
+    var(--foreground),
+    color-mix(in srgb, var(--foreground) 64%, var(--background))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* --- Premium-Skeleton (Shimmer) --- */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--muted);
+  border-radius: 0.5rem;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--foreground) 8%, transparent),
+    transparent
+  );
+  animation: fl-shimmer 1.6s var(--ease-standard) infinite;
+}
+
+/* --- AI-Orb-Bausteine (geteilt von Dashboard & Jarvis) --- */
+.animate-spin-slow {
+  animation: fl-spin 6s linear infinite;
+}
+.animate-breathe {
+  animation: fl-breathe 4.5s var(--ease-standard) infinite;
+}
+.animate-ping-slow {
+  animation: fl-ring 2.6s var(--ease-out-quart) infinite;
+}
+
+/* --- Entrance-Animationen --- */
+.animate-rise {
+  animation: fl-rise 0.6s var(--ease-out-quart) both;
+}
+.animate-fade {
+  animation: fl-fade 0.45s var(--ease-standard) both;
+}
+.animate-scale-in {
+  animation: fl-scale-in 0.4s var(--ease-out-quart) both;
+}
+
 @keyframes fl-rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
 @keyframes fl-fade {
   from {
     opacity: 0;
@@ -175,13 +327,49 @@ body {
     opacity: 1;
   }
 }
-
-.animate-rise {
-  animation: fl-rise 0.5s var(--ease-out-quart) both;
+@keyframes fl-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
-
-.animate-fade {
-  animation: fl-fade 0.4s var(--ease-standard) both;
+@keyframes fl-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes fl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes fl-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+@keyframes fl-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -191,5 +379,8 @@ body {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+  body::before {
+    display: none;
   }
 }

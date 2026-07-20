@@ -117,6 +117,18 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function getPriorityDot(priority: DashboardTask["priority"]) {
+  if (priority === "critical") {
+    return "bg-danger";
+  }
+
+  if (priority === "high") {
+    return "bg-warning";
+  }
+
+  return "bg-accent";
+}
+
 export default function DashboardPage() {
   const { locationId, locationLabel } = useFilters();
 
@@ -195,129 +207,133 @@ export default function DashboardPage() {
   const recentFeedback = data?.recentFeedback ?? [];
 
   return (
-    <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-background px-6 py-7 shadow-[0_24px_70px_-36px_rgba(0,0,0,0.28)] sm:px-8 sm:py-9">
-  <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
-  <div className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-foreground/[0.04] blur-3xl" />
+    <div className="space-y-10">
+      {/* Hero – Control-Center-Kopf */}
+      <section
+        className="animate-rise relative overflow-hidden rounded-[var(--radius-surface)] border border-border p-6 sm:p-9"
+        style={{
+          backgroundImage:
+            "linear-gradient(180deg, color-mix(in srgb, #ffffff 4%, var(--card)), var(--card))",
+          boxShadow: "var(--shadow-card)",
+        }}
+      >
+        {/* ein einziger, sehr dezenter Lichtakzent für Tiefe */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full opacity-60 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%)",
+          }}
+        />
 
-  <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-    <div className="max-w-2xl">
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_0_4px_hsl(var(--accent)/0.12)]" />
-          Live Übersicht
-        </span>
+        <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-[var(--radius-pill)] border border-accent/20 bg-accent-soft px-3 py-1 text-eyebrow text-accent">
+                <span className="relative flex h-1.5 w-1.5 items-center justify-center">
+                  <span className="absolute inline-flex h-1.5 w-1.5 animate-ping-slow rounded-full bg-accent/60" />
+                  <span className="relative inline-flex h-1 w-1 rounded-full bg-accent" />
+                </span>
+                Live Übersicht
+              </span>
 
-        <span className="text-sm font-medium text-muted-foreground">
-          {locationLabel}
-        </span>
-      </div>
+              <span className="text-sm font-medium text-muted-foreground">
+                {locationLabel}
+              </span>
+            </div>
 
-      <h1 className="mt-5 font-display text-3xl font-semibold tracking-[-0.04em] text-foreground sm:text-5xl">
-        {getGreeting()}
-        {userName ? `, ${userName}` : ""}
-      </h1>
+            <h1 className="text-gradient mt-6 font-display text-4xl font-semibold tracking-[var(--tracking-display)] sm:text-5xl">
+              {getGreeting()}
+              {userName ? `, ${userName}` : ""}
+            </h1>
 
-      <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
-        Alle wichtigen Aufgaben, Bewertungen und Rückmeldungen für deinen Standort auf einen Blick.
-      </p>
-    </div>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+              Alle wichtigen Aufgaben, Bewertungen und Rückmeldungen für deinen Standort — an einem Ort, in Echtzeit.
+            </p>
+          </div>
 
-    <Link
-      href="/jarvis"
-      className="group inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-foreground px-5 text-sm font-semibold text-background shadow-[0_14px_35px_-18px_rgba(0,0,0,0.6)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_45px_-20px_rgba(0,0,0,0.7)]"
-    >
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-background/10 transition-transform duration-300 group-hover:scale-105">
-        <Icon name="jarvis" size={17} />
-      </span>
-
-      Jarvis fragen
-
-      <Icon
-        name="chevronRight"
-        size={15}
-        className="transition-transform duration-300 group-hover:translate-x-0.5"
-      />
-    </Link>
-  </div>
-</section>
+          <Link
+            href="/jarvis"
+            className="focus-ring interactive group inline-flex h-12 shrink-0 items-center justify-center gap-2.5 rounded-[var(--radius-control)] bg-foreground px-5 text-sm font-semibold text-background shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-pop)] dark:bg-white dark:text-[#0a0b0d]"
+          >
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-background/10 text-accent dark:bg-black/5">
+              <Icon name="jarvis" size={16} />
+            </span>
+            Jarvis fragen
+            <Icon
+              name="chevronRight"
+              size={15}
+              className="transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+            />
+          </Link>
+        </div>
+      </section>
 
       {errorMessage ? (
-        <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div className="animate-fade rounded-[var(--radius-card)] border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
           {errorMessage}
         </div>
       ) : null}
 
-      <section>
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold text-foreground">
-            Heute wichtig
-          </h2>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            Die wichtigsten Zahlen auf einen Blick.
-          </p>
+      {/* KPI-Zone */}
+      <section className="animate-fade" style={{ animationDelay: "80ms" }}>
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-lg font-semibold tracking-[var(--tracking-tight)] text-foreground">
+              Heute wichtig
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Die wichtigsten Kennzahlen auf einen Blick.
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard
             label="Offene Aufgaben"
-            value={
-              isLoading
-                ? "..."
-                : String(summary?.openTaskCount ?? 0)
-            }
+            value={String(summary?.openTaskCount ?? 0)}
             icon="tasks"
+            loading={isLoading}
           />
 
           <KpiCard
             label="Dringend"
-            value={
-              isLoading
-                ? "..."
-                : String(summary?.criticalTaskCount ?? 0)
-            }
+            value={String(summary?.criticalTaskCount ?? 0)}
             icon="alert"
             tone={
               (summary?.criticalTaskCount ?? 0) > 0
                 ? "danger"
                 : "neutral"
             }
+            loading={isLoading}
           />
 
           <KpiCard
             label="Bewertung"
-            value={
-              isLoading
-                ? "..."
-                : (summary?.avgRating ?? 0)
-                    .toFixed(1)
-                    .replace(".", ",")
-            }
+            value={(summary?.avgRating ?? 0)
+              .toFixed(1)
+              .replace(".", ",")}
             unit="/ 5"
             icon="star"
             tone="accent"
+            loading={isLoading}
           />
 
           <KpiCard
             label="Feedbacks"
-            value={
-              isLoading
-                ? "..."
-                : String(summary?.feedbackCount ?? 0)
-            }
+            value={String(summary?.feedbackCount ?? 0)}
             icon="feedback"
+            loading={isLoading}
           />
         </div>
 
         {!isLoading &&
         (summary?.overdueTaskCount ?? 0) > 0 ? (
-          <div className="mt-4 flex items-center gap-3 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3">
-            <Icon
-              name="clock"
-              size={18}
-              className="shrink-0 text-danger"
-            />
+          <div className="animate-fade mt-4 flex items-center gap-3 rounded-[var(--radius-card)] border border-danger/25 bg-danger-soft px-4 py-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-danger/25 text-danger">
+              <Icon name="clock" size={16} />
+            </span>
 
             <p className="text-sm text-foreground">
               <span className="font-semibold">
@@ -330,7 +346,7 @@ export default function DashboardPage() {
 
             <Link
               href="/aufgaben"
-              className="ml-auto text-sm font-semibold text-danger hover:underline"
+              className="focus-ring ml-auto rounded text-sm font-semibold text-danger hover:underline"
             >
               Ansehen
             </Link>
@@ -338,62 +354,70 @@ export default function DashboardPage() {
         ) : null}
       </section>
 
+      {/* Zwei Arbeitsbereiche */}
       <div className="grid gap-6 xl:grid-cols-2">
-        <section>
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">
-                Das solltest du zuerst erledigen
-              </h2>
+        <section
+          className="animate-fade"
+          style={{ animationDelay: "140ms" }}
+        >
+          <Card className="overflow-hidden">
+            <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
+              <div>
+                <h2 className="font-display text-base font-semibold tracking-[var(--tracking-tight)] text-foreground">
+                  Zuerst erledigen
+                </h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Nach Dringlichkeit sortiert.
+                </p>
+              </div>
 
-              <p className="mt-1 text-sm text-muted-foreground">
-                Nach Dringlichkeit sortierte Aufgaben.
-              </p>
+              <Link
+                href="/aufgaben"
+                className="focus-ring inline-flex items-center gap-1 rounded text-sm font-semibold text-accent hover:gap-1.5"
+              >
+                Alle
+                <Icon name="chevronRight" size={14} />
+              </Link>
             </div>
 
-            <Link
-              href="/aufgaben"
-              className="shrink-0 text-sm font-semibold text-accent hover:underline"
-            >
-              Alle Aufgaben
-            </Link>
-          </div>
-
-          <Card className="overflow-hidden">
             {isLoading ? (
-              <div className="p-8 text-center text-sm text-muted-foreground">
-                Aufgaben werden geladen ...
+              <div className="divide-y divide-border">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex items-start gap-4 p-5">
+                    <span className="skeleton mt-1 h-2.5 w-2.5 shrink-0 rounded-full" />
+                    <div className="min-w-0 flex-1 space-y-2.5">
+                      <span className="skeleton block h-4 w-1/2" />
+                      <span className="skeleton block h-3 w-3/4" />
+                      <span className="skeleton block h-3 w-1/3" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : recentTasks.length === 0 ? (
-              <div className="p-8 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <Icon name="tasks" size={22} />
+              <div className="p-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
+                  <Icon name="check" size={22} />
                 </div>
-
                 <p className="mt-4 font-semibold text-foreground">
                   Alles erledigt
                 </p>
-
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1.5 text-sm text-muted-foreground">
                   Aktuell gibt es keine offenen Aufgaben.
                 </p>
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {recentTasks.map((task) => (
+                {recentTasks.map((task, index) => (
                   <div
                     key={task.id}
-                    className="p-5"
+                    className="animate-rise group relative p-5 transition-colors duration-200 hover:bg-muted/40"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="flex items-start gap-4">
                       <span
-                        className={
-                          task.priority === "critical"
-                            ? "mt-1 h-3 w-3 shrink-0 rounded-full bg-danger"
-                            : task.priority === "high"
-                              ? "mt-1 h-3 w-3 shrink-0 rounded-full bg-warning"
-                              : "mt-1 h-3 w-3 shrink-0 rounded-full bg-accent"
-                        }
+                        className={`mt-[7px] h-2.5 w-2.5 shrink-0 rounded-full ring-4 ring-transparent transition-all duration-300 group-hover:ring-current/5 ${getPriorityDot(
+                          task.priority
+                        )}`}
                       />
 
                       <div className="min-w-0 flex-1">
@@ -402,7 +426,7 @@ export default function DashboardPage() {
                             {task.title}
                           </p>
 
-                          <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                          <span className="rounded-[var(--radius-pill)] border border-border bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
                             {PRIORITY_LABELS[task.priority]}
                           </span>
                         </div>
@@ -437,51 +461,62 @@ export default function DashboardPage() {
           </Card>
         </section>
 
-        <section>
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">
-                Das sagen deine Mitglieder
-              </h2>
+        <section
+          className="animate-fade"
+          style={{ animationDelay: "180ms" }}
+        >
+          <Card className="overflow-hidden">
+            <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
+              <div>
+                <h2 className="font-display text-base font-semibold tracking-[var(--tracking-tight)] text-foreground">
+                  Stimmen der Mitglieder
+                </h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Die neuesten Rückmeldungen.
+                </p>
+              </div>
 
-              <p className="mt-1 text-sm text-muted-foreground">
-                Die neuesten Rückmeldungen.
-              </p>
+              <Link
+                href="/feedback"
+                className="focus-ring inline-flex items-center gap-1 rounded text-sm font-semibold text-accent hover:gap-1.5"
+              >
+                Alle
+                <Icon name="chevronRight" size={14} />
+              </Link>
             </div>
 
-            <Link
-              href="/feedback"
-              className="shrink-0 text-sm font-semibold text-accent hover:underline"
-            >
-              Alle Feedbacks
-            </Link>
-          </div>
-
-          <Card className="overflow-hidden">
             {isLoading ? (
-              <div className="p-8 text-center text-sm text-muted-foreground">
-                Feedbacks werden geladen ...
+              <div className="divide-y divide-border">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="p-5">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="skeleton block h-4 w-24" />
+                      <span className="skeleton block h-3 w-16" />
+                    </div>
+                    <span className="skeleton mt-3 block h-4 w-4/5" />
+                    <span className="skeleton mt-3 block h-3 w-1/3" />
+                  </div>
+                ))}
               </div>
             ) : recentFeedback.length === 0 ? (
-              <div className="p-8 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <div className="p-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[var(--radius-control)] border border-border bg-muted text-muted-foreground">
                   <Icon name="feedback" size={22} />
                 </div>
-
                 <p className="mt-4 font-semibold text-foreground">
                   Noch kein Feedback
                 </p>
-
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1.5 text-sm text-muted-foreground">
                   Neue Rückmeldungen erscheinen hier.
                 </p>
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {recentFeedback.map((feedback) => (
+                {recentFeedback.map((feedback, index) => (
                   <div
                     key={feedback.id}
-                    className="p-5"
+                    className="animate-rise p-5 transition-colors duration-200 hover:bg-muted/40"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <Stars
@@ -511,51 +546,79 @@ export default function DashboardPage() {
         </section>
       </div>
 
-      <section>
-  <Card className="group relative overflow-hidden border-foreground/10 bg-foreground p-0 text-background shadow-[0_28px_80px_-36px_rgba(0,0,0,0.7)]">
-    <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-accent/20 blur-3xl transition-transform duration-700 group-hover:scale-110" />
-
-    <div className="pointer-events-none absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-background/5 blur-3xl" />
-
-    <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-      <div className="flex items-start gap-4">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-background/10 bg-background/10 text-accent shadow-[0_12px_35px_-18px_hsl(var(--accent)/0.8)] backdrop-blur">
-          <Icon name="jarvis" size={25} />
-        </span>
-
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-xl font-semibold tracking-tight text-background">
-              Was möchtest du wissen?
-            </h2>
-
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              Bereit
-            </span>
-          </div>
-
-          <p className="mt-2 max-w-xl text-sm leading-6 text-background/60">
-            Frag Jarvis nach Problemen, Feedbacks oder offenen Aufgaben und erhalte sofort eine kompakte Übersicht.
-          </p>
-        </div>
-      </div>
-
-      <Link
-        href="/jarvis"
-        className="group/button inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-background px-5 text-sm font-semibold text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:bg-background/90"
+      {/* Jarvis – Premium-Banner mit Mini-Core */}
+      <section
+        className="animate-fade"
+        style={{ animationDelay: "220ms" }}
       >
-        Jarvis öffnen
+        <Card className="interactive group overflow-hidden">
+          <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -left-16 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full opacity-50 blur-3xl transition-opacity duration-500 group-hover:opacity-80"
+              style={{
+                background:
+                  "radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%)",
+              }}
+            />
 
-        <Icon
-          name="chevronRight"
-          size={16}
-          className="transition-transform duration-300 group-hover/button:translate-x-1"
-        />
-      </Link>
-    </div>
-  </Card>
-</section>
+            <div className="relative flex items-center gap-4">
+              {/* Mini-Core */}
+              <span className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center">
+                <span
+                  className="absolute inset-0 rounded-full opacity-70 blur-[6px]"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 60%)",
+                  }}
+                />
+                <span
+                  className="absolute inset-0 animate-spin-slow rounded-full opacity-70"
+                  style={{
+                    background:
+                      "conic-gradient(from 90deg, transparent, var(--accent), transparent 55%)",
+                    WebkitMaskImage:
+                      "radial-gradient(circle, transparent 56%, #000 58%)",
+                    maskImage:
+                      "radial-gradient(circle, transparent 56%, #000 58%)",
+                  }}
+                />
+                <span className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-accent">
+                  <Icon name="jarvis" size={18} />
+                </span>
+              </span>
+
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-display text-lg font-semibold tracking-[var(--tracking-tight)] text-foreground">
+                    Frag Jarvis
+                  </h2>
+                  <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-accent/20 bg-accent-soft px-2.5 py-0.5 text-[11px] font-semibold text-accent">
+                    <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                    Bereit
+                  </span>
+                </div>
+
+                <p className="mt-1.5 max-w-xl text-sm leading-6 text-muted-foreground">
+                  Deinen Assistenten nach Problemen, Feedbacks oder offenen Aufgaben fragen — mit sofortiger, kompakter Einschätzung.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/jarvis"
+              className="focus-ring interactive group/btn relative inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-foreground px-5 text-sm font-semibold text-background shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-pop)] dark:bg-white dark:text-[#0a0b0d]"
+            >
+              Jarvis öffnen
+              <Icon
+                name="chevronRight"
+                size={16}
+                className="transition-transform duration-200 ease-out group-hover/btn:translate-x-0.5"
+              />
+            </Link>
+          </div>
+        </Card>
+      </section>
     </div>
   );
 }

@@ -453,7 +453,8 @@ export default function FeedbackPage() {
       />
 
       {successMessage ? (
-        <div className="mb-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600">
+        <div className="animate-fade mb-4 flex items-center gap-2.5 rounded-[var(--radius-card)] border border-accent/25 bg-accent-soft px-4 py-3 text-sm text-accent">
+          <Icon name="check" size={16} className="shrink-0" />
           {successMessage}
         </div>
       ) : null}
@@ -463,6 +464,7 @@ export default function FeedbackPage() {
           label="Feedbacks"
           value={String(counts.total)}
           icon="feedback"
+          loading={isLoading}
         />
 
         <KpiCard
@@ -470,6 +472,8 @@ export default function FeedbackPage() {
           value={counts.average.toFixed(1).replace(".", ",")}
           unit="/ 5"
           icon="star"
+          tone="accent"
+          loading={isLoading}
         />
 
         <KpiCard
@@ -477,6 +481,7 @@ export default function FeedbackPage() {
           value={String(counts.negative)}
           icon="alert"
           tone="danger"
+          loading={isLoading}
         />
 
         <KpiCard
@@ -484,10 +489,11 @@ export default function FeedbackPage() {
           value={String(counts.positive)}
           icon="trend"
           tone="accent"
+          loading={isLoading}
         />
       </div>
 
-      <Card className="mt-6">
+      <Card className="mt-6 overflow-hidden">
         <CardHeader
           title="Feedback-Eingang"
           subtitle={
@@ -496,16 +502,16 @@ export default function FeedbackPage() {
               : `${filtered.length} Einträge`
           }
           action={
-            <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+            <div className="flex items-center gap-1 rounded-[var(--radius-control)] border border-border bg-muted p-1">
               {SENTIMENT_FILTERS.map((filter) => (
                 <button
                   key={filter.value}
                   type="button"
                   onClick={() => setSentiment(filter.value)}
                   className={cn(
-                    "rounded-md px-3 py-1 text-xs font-medium transition-colors",
+                    "focus-ring rounded-[calc(var(--radius-control)-2px)] px-3 py-1 text-xs font-medium transition-colors",
                     sentiment === filter.value
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "bg-card text-foreground shadow-[var(--shadow-flat)]"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -519,9 +525,26 @@ export default function FeedbackPage() {
         <div className="mt-2">
           {errorMessage ? (
             <div className="p-5">
-              <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-500">
+              <p className="rounded-[var(--radius-card)] border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
                 {errorMessage}
               </p>
+            </div>
+          ) : null}
+
+          {isLoading ? (
+            <div className="divide-y divide-border">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-4 px-6 py-4"
+                >
+                  <span className="skeleton h-4 w-20" />
+                  <span className="skeleton h-4 w-32" />
+                  <span className="skeleton h-4 w-24" />
+                  <span className="skeleton h-4 flex-1" />
+                  <span className="skeleton h-8 w-28 rounded-[var(--radius-control)]" />
+                </div>
+              ))}
             </div>
           ) : null}
 
@@ -606,7 +629,7 @@ export default function FeedbackPage() {
                                 .value as ApiFeedback["status"]
                             )
                           }
-                          className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-medium text-foreground outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                          className="focus-ring rounded-[var(--radius-control)] border border-border bg-background px-3 py-2 text-xs font-medium text-foreground outline-none transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <option value="new">Neu</option>
                           <option value="reviewed">
@@ -628,8 +651,9 @@ export default function FeedbackPage() {
                         <button
                           type="button"
                           onClick={() => openTaskDialog(item)}
-                          className="inline-flex items-center rounded-lg border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                          className="focus-ring interactive inline-flex items-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-card px-3 py-2 text-xs font-medium text-foreground hover:bg-muted"
                         >
+                          <Icon name="plus" size={13} />
                           Aufgabe erstellen
                         </button>
                       </TD>
@@ -644,7 +668,7 @@ export default function FeedbackPage() {
 
       {selectedFeedback ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="animate-fade fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="create-task-title"
@@ -654,12 +678,12 @@ export default function FeedbackPage() {
             }
           }}
         >
-          <div className="w-full max-w-xl rounded-2xl border border-border bg-card shadow-2xl">
+          <div className="animate-scale-in surface w-full max-w-xl rounded-[var(--radius-surface)] shadow-[var(--shadow-overlay)]">
             <div className="flex items-start justify-between border-b border-border px-6 py-5">
               <div>
                 <h2
                   id="create-task-title"
-                  className="text-lg font-semibold text-foreground"
+                  className="font-display text-lg font-semibold tracking-[var(--tracking-tight)] text-foreground"
                 >
                   Aufgabe erstellen
                 </h2>
@@ -673,16 +697,17 @@ export default function FeedbackPage() {
                 type="button"
                 onClick={closeTaskDialog}
                 disabled={isCreatingTask}
-                className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+                className="focus-ring rounded-[var(--radius-control)] p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+                aria-label="Dialog schließen"
               >
-                Schließen
+                <Icon name="close" size={18} />
               </button>
             </div>
 
             <form onSubmit={handleCreateTask}>
               <div className="space-y-4 px-6 py-5">
                 {taskErrorMessage ? (
-                  <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-500">
+                  <div className="rounded-[var(--radius-card)] border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
                     {taskErrorMessage}
                   </div>
                 ) : null}
@@ -707,7 +732,7 @@ export default function FeedbackPage() {
                         title: event.target.value,
                       }))
                     }
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary"
+                    className="focus-ring w-full rounded-[var(--radius-control)] border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors"
                   />
                 </div>
 
@@ -729,7 +754,7 @@ export default function FeedbackPage() {
                         description: event.target.value,
                       }))
                     }
-                    className="w-full resize-y rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary"
+                    className="focus-ring w-full resize-y rounded-[var(--radius-control)] border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors"
                   />
                 </div>
 
@@ -752,7 +777,7 @@ export default function FeedbackPage() {
                           category: event.target.value,
                         }))
                       }
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary"
+                      className="focus-ring w-full rounded-[var(--radius-control)] border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors"
                     />
                   </div>
 
@@ -774,7 +799,7 @@ export default function FeedbackPage() {
                             event.target.value as TaskPriority,
                         }))
                       }
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary"
+                      className="focus-ring w-full rounded-[var(--radius-control)] border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors"
                     >
                       <option value="critical">Kritisch</option>
                       <option value="high">Hoch</option>
@@ -804,7 +829,7 @@ export default function FeedbackPage() {
                           assigneeName: event.target.value,
                         }))
                       }
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary"
+                      className="focus-ring w-full rounded-[var(--radius-control)] border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors"
                     />
                   </div>
 
@@ -826,7 +851,7 @@ export default function FeedbackPage() {
                           dueDate: event.target.value,
                         }))
                       }
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary"
+                      className="focus-ring w-full rounded-[var(--radius-control)] border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -837,7 +862,7 @@ export default function FeedbackPage() {
                   type="button"
                   onClick={closeTaskDialog}
                   disabled={isCreatingTask}
-                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                  className="focus-ring rounded-[var(--radius-control)] border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Abbrechen
                 </button>
@@ -845,10 +870,10 @@ export default function FeedbackPage() {
                 <button
                   type="submit"
                   disabled={isCreatingTask}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="focus-ring interactive rounded-[var(--radius-control)] bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-[#0a0b0d]"
                 >
                   {isCreatingTask
-                    ? "Wird erstellt ..."
+                    ? "Wird erstellt …"
                     : "Aufgabe erstellen"}
                 </button>
               </div>
