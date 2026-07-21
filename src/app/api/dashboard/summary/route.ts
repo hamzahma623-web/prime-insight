@@ -30,15 +30,52 @@ export async function GET(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (profileError || !profile || !profile.is_active) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Profil nicht gefunden oder inaktiv.",
-        },
-        { status: 403 }
-      );
-    }
+    if (profileError) {
+  console.error("Dashboard profile query failed:", {
+    userId: user.id,
+    code: profileError.code,
+    message: profileError.message,
+    details: profileError.details,
+    hint: profileError.hint,
+  });
+
+  return NextResponse.json(
+    {
+      ok: false,
+      error: "Profil konnte nicht geladen werden.",
+    },
+    { status: 500 }
+  );
+}
+
+if (!profile) {
+  console.error("Dashboard profile missing:", {
+    userId: user.id,
+    email: user.email,
+  });
+
+  return NextResponse.json(
+    {
+      ok: false,
+      error: "Kein Profil für diesen Benutzer vorhanden.",
+    },
+    { status: 403 }
+  );
+}
+
+if (!profile.is_active) {
+  console.error("Dashboard profile inactive:", {
+    userId: user.id,
+  });
+
+  return NextResponse.json(
+    {
+      ok: false,
+      error: "Dieses Benutzerprofil ist deaktiviert.",
+    },
+    { status: 403 }
+  );
+}
 
     const requestedLocation =
       request.nextUrl.searchParams.get("locationId") ?? "all";
