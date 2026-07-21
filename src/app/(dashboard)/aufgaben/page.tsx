@@ -423,7 +423,6 @@ export default function AufgabenPage() {
                     <Card
                       key={task.id}
                       className="animate-rise p-4"
-                      // @ts-expect-error – inline style for stagger
                       style={{ animationDelay: `${index * 45}ms` }}
                     >
                       <div className="flex items-start justify-between gap-2">
