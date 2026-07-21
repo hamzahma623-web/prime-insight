@@ -75,6 +75,109 @@ type ChatMessage = {
   answer?: JarvisAnswer;
 };
 
+/*
+ * Persistenz: Der Chat wird pro Standort + Zeitraum in
+ * localStorage gespeichert und bleibt 24 Stunden ab
+ * Erstellung erhalten. Danach wird er verworfen und ein
+ * neues Startbriefing erzeugt.
+ */
+const STORAGE_PREFIX = "jarvis:chat:";
+const CHAT_TTL_MS = 24 * 60 * 60 * 1000;
+
+type StoredChat = {
+  createdAt: number;
+  messages: ChatMessage[];
+  createdDraftMessageIds: string[];
+};
+
+function getStorageKey(locationId: string, timeRange: string) {
+  return `${STORAGE_PREFIX}${locationId}:${timeRange}`;
+}
+
+function loadStoredChat(
+  locationId: string,
+  timeRange: string
+): StoredChat | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const key = getStorageKey(locationId, timeRange);
+
+  try {
+    const raw = window.localStorage.getItem(key);
+
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as StoredChat;
+
+    if (
+      !parsed ||
+      typeof parsed.createdAt !== "number" ||
+      !Array.isArray(parsed.messages)
+    ) {
+      window.localStorage.removeItem(key);
+      return null;
+    }
+
+    if (Date.now() - parsed.createdAt >= CHAT_TTL_MS) {
+      window.localStorage.removeItem(key);
+      return null;
+    }
+
+    return {
+      createdAt: parsed.createdAt,
+      messages: parsed.messages,
+      createdDraftMessageIds: Array.isArray(
+        parsed.createdDraftMessageIds
+      )
+        ? parsed.createdDraftMessageIds
+        : [],
+    };
+  } catch {
+    window.localStorage.removeItem(key);
+    return null;
+  }
+}
+
+function saveStoredChat(
+  locationId: string,
+  timeRange: string,
+  chat: StoredChat
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      getStorageKey(locationId, timeRange),
+      JSON.stringify(chat)
+    );
+  } catch {
+    /* Speicher voll oder nicht verfügbar – ignorieren */
+  }
+}
+
+function removeStoredChat(
+  locationId: string,
+  timeRange: string
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(
+      getStorageKey(locationId, timeRange)
+    );
+  } catch {
+    /* ignorieren */
+  }
+}
+
 const INITIAL_BRIEFING_PROMPT = `
 Erstelle ein kurzes persönliches Startbriefing zur aktuellen Lage.
 
@@ -230,6 +333,28 @@ export default function JarvisPage() {
   );
 
   /*
+   * Zählt hoch, sobald eine Draft-ID als „erstellt"
+   * markiert wurde. Dient nur dazu, den Persistenz-Effect
+   * für die Ref auszulösen (Refs lösen keine Effects aus).
+   */
+  const [draftVersion, setDraftVersion] = useState(0);
+
+  /*
+   * Erstellzeitpunkt des aktuellen Chats (pro Filter).
+   * Wird beim Wiederherstellen aus dem Speicher übernommen
+   * und sonst beim Start eines neuen Chats gesetzt.
+   */
+  const chatCreatedAtRef = useRef<number>(Date.now());
+
+  /*
+   * Solange true, wird der Speichern-Effect für messages
+   * übersprungen – verhindert, dass ein gerade
+   * wiederhergestellter Chat direkt wieder überschrieben
+   * oder ein leerer Zwischenstand gespeichert wird.
+   */
+  const skipNextSaveRef = useRef<boolean>(true);
+
+  /*
    * Verhindert doppelte Startbriefings, zum Beispiel
    * durch React Strict Mode in der lokalen Entwicklung.
    */
@@ -251,6 +376,44 @@ export default function JarvisPage() {
 
     activeBriefingKeyRef.current = briefingKey;
 
+    /*
+     * Zuerst prüfen, ob für diese Filter-Kombination ein
+     * gültiger (jünger als 24 Stunden) gespeicherter Chat
+     * existiert. Falls ja, diesen wiederherstellen und
+     * KEIN neues Startbriefing anfordern.
+     */
+    const stored = loadStoredChat(locationId, timeRange);
+
+    if (stored && stored.messages.length > 0) {
+      chatCreatedAtRef.current = stored.createdAt;
+      createdDraftMessageIdsRef.current = new Set(
+        stored.createdDraftMessageIds
+      );
+
+      skipNextSaveRef.current = true;
+      setMessages(stored.messages);
+      setInput("");
+      setErrorMessage("");
+
+      /*
+       * Damit die bestehende Briefing-Logik das
+       * Neu-Briefing für diesen Key überspringt.
+       */
+      requestedBriefingKeyRef.current = briefingKey;
+
+      return;
+    }
+
+    /*
+     * Kein gültiger Chat vorhanden (nicht vorhanden oder
+     * älter als 24 Stunden) – alten Eintrag entfernen und
+     * einen neuen Chat starten.
+     */
+    removeStoredChat(locationId, timeRange);
+    chatCreatedAtRef.current = Date.now();
+    createdDraftMessageIdsRef.current = new Set();
+
+    skipNextSaveRef.current = true;
     setMessages([
       {
         id: "jarvis-intro",
@@ -359,6 +522,66 @@ export default function JarvisPage() {
     void loadInitialBriefing();
   }, [locationId, timeRange]);
 
+  /*
+   * Speichert den aktuellen Chatverlauf pro Filter.
+   * Wird bei jeder Änderung von messages ausgelöst.
+   */
+  useEffect(() => {
+    if (skipNextSaveRef.current) {
+      skipNextSaveRef.current = false;
+
+      /*
+       * Wiederhergestellte Verläufe müssen trotzdem einmal
+       * gespeichert werden, damit ein neu gestarteter Chat
+       * (mit frischem createdAt) sofort persistiert ist.
+       * Nur den frisch initialisierten Intro-Zustand ohne
+       * Antwort NICHT sofort speichern ist unnötig – wir
+       * speichern hier bewusst nicht, um Doppelspeichern
+       * direkt nach Restore zu vermeiden.
+       */
+      return;
+    }
+
+    if (messages.length === 0) {
+      return;
+    }
+
+    saveStoredChat(locationId, timeRange, {
+      createdAt: chatCreatedAtRef.current,
+      messages,
+      createdDraftMessageIds: Array.from(
+        createdDraftMessageIdsRef.current
+      ),
+    });
+  }, [messages, locationId, timeRange]);
+
+  /*
+   * Speichert zusätzlich, wenn eine Aufgaben-Draft als
+   * erstellt markiert wurde (Ref-Änderung über
+   * draftVersion sichtbar gemacht).
+   */
+  useEffect(() => {
+    if (draftVersion === 0) {
+      return;
+    }
+
+    if (messages.length === 0) {
+      return;
+    }
+
+    saveStoredChat(locationId, timeRange, {
+      createdAt: chatCreatedAtRef.current,
+      messages,
+      createdDraftMessageIds: Array.from(
+        createdDraftMessageIdsRef.current
+      ),
+    });
+    // messages absichtlich nicht als Dependency – wird
+    // bereits vom messages-Effect abgedeckt; hier soll nur
+    // die Draft-Markierung zusätzlich persistiert werden.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftVersion, locationId, timeRange]);
+
   useEffect(() => {
     endRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -462,6 +685,7 @@ export default function JarvisPage() {
         createdDraftMessageIdsRef.current.add(
           latestDraftMessage.id
         );
+        setDraftVersion((version) => version + 1);
 
         const createdTitles = createdTasks
           .map((task) => `„${task.title}“`)
