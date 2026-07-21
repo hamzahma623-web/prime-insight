@@ -45,7 +45,7 @@ const NAV: NavItem[] = [
   },
   {
     href: "/jarvis",
-    label: "Jarvis",
+    label: "Prime",
     icon: "jarvis",
   },
   {

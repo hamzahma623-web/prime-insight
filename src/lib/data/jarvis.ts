@@ -213,7 +213,7 @@ export const jarvisPrompts: JarvisPrompt[] = [
 export const jarvisFallback: JarvisPrompt["answer"] = {
   headline: "Dazu liegen mir Standortdaten vor.",
   body:
-    "In diesem Prototyp arbeitet Jarvis mit vorbereiteten Beispielantworten. Wähle eine der Vorschlagsfragen, um eine vollständige Auswertung mit Standortbezug, priorisierten Maßnahmen und Quellenhinweisen zu sehen. In der späteren Version beantwortet Jarvis freie Fragen live auf Basis der freigegebenen Daten aller Standorte.",
+    "In diesem Prototyp arbeitet Prime mit vorbereiteten Beispielantworten. Wähle eine der Vorschlagsfragen, um eine vollständige Auswertung mit Standortbezug, priorisierten Maßnahmen und Quellenhinweisen zu sehen. In der späteren Version beantwortet Prime freie Fragen live auf Basis der freigegebenen Daten aller Standorte.",
   actions: [],
   sources: [
     {

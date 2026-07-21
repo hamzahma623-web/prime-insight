@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
 
       if (accessError) {
         console.error(
-          "Jarvis location access failed:",
+          "Prime location access failed:",
           accessError
         );
 
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
 
         if (locationError) {
           console.error(
-            "Jarvis location lookup failed:",
+            "Prime location lookup failed:",
             locationError
           );
 
@@ -447,7 +447,7 @@ export async function POST(request: NextRequest) {
 
     if (locationsError) {
       console.error(
-        "Jarvis locations query failed:",
+        "Prime locations query failed:",
         locationsError
       );
 
@@ -462,7 +462,7 @@ export async function POST(request: NextRequest) {
 
     if (feedbackError) {
       console.error(
-        "Jarvis feedback query failed:",
+        "Prime feedback query failed:",
         feedbackError
       );
 
@@ -477,7 +477,7 @@ export async function POST(request: NextRequest) {
 
     if (tasksError) {
       console.error(
-        "Jarvis tasks query failed:",
+        "Prime tasks query failed:",
         tasksError
       );
 
@@ -690,7 +690,7 @@ Liefere ausschließlich das geforderte JSON-Format.
       text: {
         format: {
           type: "json_schema",
-          name: "jarvis_management_answer",
+          name: "prime_management_answer",
           strict: true,
           schema: {
             type: "object",
@@ -835,7 +835,7 @@ Liefere ausschließlich das geforderte JSON-Format.
   response.status === "incomplete" ||
   !response.output_text
 ) {
-  console.error("Jarvis OpenAI response incomplete:", {
+  console.error("Prime OpenAI response incomplete:", {
     status: response.status,
     incompleteDetails: response.incomplete_details,
     outputTextLength: response.output_text?.length ?? 0,
@@ -857,7 +857,7 @@ try {
     response.output_text
   ) as JarvisAnswer;
 } catch (parseError) {
-  console.error("Jarvis JSON parsing failed:", {
+  console.error("Prime JSON parsing failed:", {
     parseError,
     outputText: response.output_text,
   });
@@ -909,7 +909,7 @@ try {
     });
   } catch (error) {
     console.error(
-      "Jarvis chat API failed:",
+      "Prime chat API failed:",
       error
     );
 
@@ -923,8 +923,8 @@ try {
         ok: false,
         error:
           process.env.NODE_ENV === "development"
-            ? `Jarvis-Fehler: ${message}`
-            : "Jarvis konnte die Anfrage nicht bearbeiten.",
+            ? `Prime-Fehler: ${message}`
+            : "Prime konnte die Anfrage nicht bearbeiten.",
       },
       { status: 500 }
     );

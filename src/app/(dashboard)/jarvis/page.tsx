@@ -460,7 +460,7 @@ export default function JarvisPage() {
         ) {
           throw new Error(
             result.error ||
-              "Jarvis konnte das Startbriefing nicht erstellen."
+              "Prime konnte das Startbriefing nicht erstellen."
           );
         }
 
@@ -508,7 +508,7 @@ export default function JarvisPage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Jarvis konnte das Startbriefing nicht laden."
+            : "Prime konnte das Startbriefing nicht laden."
         );
       } finally {
         if (
@@ -529,16 +529,6 @@ export default function JarvisPage() {
   useEffect(() => {
     if (skipNextSaveRef.current) {
       skipNextSaveRef.current = false;
-
-      /*
-       * Wiederhergestellte Verläufe müssen trotzdem einmal
-       * gespeichert werden, damit ein neu gestarteter Chat
-       * (mit frischem createdAt) sofort persistiert ist.
-       * Nur den frisch initialisierten Intro-Zustand ohne
-       * Antwort NICHT sofort speichern ist unnötig – wir
-       * speichern hier bewusst nicht, um Doppelspeichern
-       * direkt nach Restore zu vermeiden.
-       */
       return;
     }
 
@@ -576,9 +566,6 @@ export default function JarvisPage() {
         createdDraftMessageIdsRef.current
       ),
     });
-    // messages absichtlich nicht als Dependency – wird
-    // bereits vom messages-Effect abgedeckt; hier soll nur
-    // die Draft-Markierung zusätzlich persistiert werden.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftVersion, locationId, timeRange]);
 
@@ -598,7 +585,7 @@ export default function JarvisPage() {
 
     if (!taskLocationId) {
       throw new Error(
-        "Bitte wähle zuerst einen konkreten Standort aus, bevor Jarvis die Aufgabe erstellt."
+        "Bitte wähle zuerst einen konkreten Standort aus, bevor Prime die Aufgabe erstellt."
       );
     }
 
@@ -616,7 +603,7 @@ export default function JarvisPage() {
         status: "open",
         category: task.category || "Allgemein",
         assigneeName: null,
-        source: "Jarvis",
+        source: "Prime",
         dueAt: null,
       }),
     });
@@ -755,7 +742,7 @@ export default function JarvisPage() {
       if (!response.ok || !result.ok || !result.answer) {
         throw new Error(
           result.error ||
-            "Jarvis konnte keine Antwort erstellen."
+            "Prime konnte keine Antwort erstellen."
         );
       }
 
@@ -776,7 +763,7 @@ export default function JarvisPage() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Jarvis konnte die Anfrage nicht bearbeiten."
+          : "Prime konnte die Anfrage nicht bearbeiten."
       );
     } finally {
       setIsThinking(false);
@@ -809,12 +796,12 @@ export default function JarvisPage() {
     <div>
       <SectionHeading
         eyebrow="Assistent der Geschäftsführung"
-        title="Jarvis"
+        title="Prime"
         description="Dein persönlicher Copilot für Feedbacks, Aufgaben und die Entwicklung deines Studios."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Select
-              ariaLabel="Standort für Jarvis"
+              ariaLabel="Standort für Prime"
               icon="location"
               value={locationId}
               options={locationOptions}
@@ -822,7 +809,7 @@ export default function JarvisPage() {
             />
 
             <Select
-              ariaLabel="Zeitraum für Jarvis"
+              ariaLabel="Zeitraum für Prime"
               icon="clock"
               value={timeRange}
               options={TIME_RANGES}
@@ -879,7 +866,7 @@ export default function JarvisPage() {
             <div>
               <div className="flex items-center gap-2">
                 <p className="font-display text-sm font-semibold tracking-[var(--tracking-tight)] text-foreground">
-                  Jarvis
+                  Prime
                 </p>
 
                 <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-accent/20 bg-accent-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-accent">
@@ -958,8 +945,8 @@ export default function JarvisPage() {
               disabled={isThinking}
               placeholder={
                 isThinking
-                  ? "Jarvis sieht sich die Daten an …"
-                  : "Frag Jarvis etwas zu deinem Studio …"
+                  ? "Prime sieht sich die Daten an …"
+                  : "Frag Prime etwas zu deinem Studio …"
               }
               className="h-10 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
             />
@@ -976,7 +963,7 @@ export default function JarvisPage() {
           </div>
 
           <p className="mt-2.5 text-center text-[11px] text-muted-foreground">
-            Jarvis berücksichtigt ausschließlich deine
+            Prime berücksichtigt ausschließlich deine
             freigegebenen Standortdaten.
           </p>
         </div>
@@ -1183,7 +1170,7 @@ function JarvisAnswerBlock({
       {/* Kopf */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-5 py-4">
         <p className="text-eyebrow text-muted-foreground">
-          Jarvis Briefing
+          Prime Briefing
         </p>
 
         <span
