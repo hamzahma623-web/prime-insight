@@ -74,25 +74,22 @@ export default function PublicFeedbackPage() {
   useEffect(() => {
     async function loadLocation() {
       try {
-        const response = await fetch("/api/locations/list", {
-          cache: "no-store",
-        });
+        const response = await fetch(
+  `/api/public/locations/${encodeURIComponent(slug)}`,
+  {
+    cache: "no-store",
+  }
+);
 
-        const result = await response.json();
+const result = await response.json();
 
-        if (!response.ok || !result.ok) {
-          throw new Error("Standorte konnten nicht geladen werden.");
-        }
+if (!response.ok || !result.ok) {
+  throw new Error(
+    result.error || "Standort konnte nicht geladen werden."
+  );
+}
 
-        const matchingLocation = (result.locations as Location[]).find(
-          (item) => item.slug === slug
-        );
-
-        if (!matchingLocation) {
-          throw new Error("Dieser Standort wurde nicht gefunden.");
-        }
-
-        setLocation(matchingLocation);
+setLocation(result.location as Location);
       } catch (error) {
         console.error("Location loading failed:", error);
 
