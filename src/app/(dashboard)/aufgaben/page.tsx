@@ -421,10 +421,10 @@ export default function AufgabenPage() {
 
                   return (
                     <Card
-                      key={task.id}
-                      className="animate-rise p-42
-                      style={{ animationDelay: `${index * 45}ms` }}
-                    >
+  key={task.id}
+  className="animate-rise p-4"
+  style={{ animationDelay: index * 45 + "ms" }}
+>
                       <div className="flex items-start justify-between gap-2">
                         <PriorityBadge priority={task.priority} />
 
