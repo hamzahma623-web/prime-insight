@@ -260,7 +260,7 @@ export default function DashboardPage() {
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-background/10 text-accent dark:bg-black/5">
               <Icon name="jarvis" size={16} />
             </span>
-            Jarvis fragen
+            Prime fragen
             <Icon
               name="chevronRight"
               size={15}
@@ -609,7 +609,7 @@ export default function DashboardPage() {
               href="/jarvis"
               className="focus-ring interactive group/btn relative inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-foreground px-5 text-sm font-semibold text-background shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-pop)] dark:bg-white dark:text-[#0a0b0d]"
             >
-              Jarvis öffnen
+              Prime öffnen
               <Icon
                 name="chevronRight"
                 size={16}
