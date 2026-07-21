@@ -591,7 +591,7 @@ export default function DashboardPage() {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-display text-lg font-semibold tracking-[var(--tracking-tight)] text-foreground">
-                    Frag Jarvis
+                    Frag Prime
                   </h2>
                   <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-accent/20 bg-accent-soft px-2.5 py-0.5 text-[11px] font-semibold text-accent">
                     <span className="h-1.5 w-1.5 rounded-full bg-accent" />
